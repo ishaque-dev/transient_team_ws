@@ -17,7 +17,7 @@ class TaskLocalDsImpl implements ITaskLocalDs {
     String? priority,
   }) async {
     final db = await _dbHelper.database;
-    
+
     List<String> whereClauses = [];
     List<dynamic> whereArgs = [];
 
@@ -36,7 +36,9 @@ class TaskLocalDsImpl implements ITaskLocalDs {
       whereArgs.add(priority);
     }
 
-    final String? where = whereClauses.isEmpty ? null : whereClauses.join(' AND ');
+    final String? where = whereClauses.isEmpty
+        ? null
+        : whereClauses.join(' AND ');
 
     final List<Map<String, dynamic>> maps = await db.query(
       'tasks',
@@ -90,18 +92,14 @@ class TaskLocalDsImpl implements ITaskLocalDs {
   @override
   Future<void> deleteTask(String id) async {
     final db = await _dbHelper.database;
-    await db.delete(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
   @override
   Future<void> cacheTasks(List<TaskModel> tasks) async {
     final db = await _dbHelper.database;
     final batch = db.batch();
-    for (var task in tasks) {
+    for (TaskModel task in tasks) {
       batch.insert(
         'tasks',
         task.toJson(),
