@@ -6,7 +6,7 @@ import 'package:transient_team_ws/core/error/common_failures.dart';
 import 'package:transient_team_ws/features/auth/data/data_sources/i_auth_local_ds.dart';
 import 'package:transient_team_ws/features/auth/data/models/user_model.dart';
 
-final class AuthLocalDsImpl implements IAuthLocalDS {
+final class AuthLocalDsImpl implements IAuthLocalDs {
   AuthLocalDsImpl(this._preferences);
 
   final SharedPreferences _preferences;
@@ -36,11 +36,11 @@ final class AuthLocalDsImpl implements IAuthLocalDS {
   }
 
   @override
-  Future<UserModel> getCurrentUser() async {
+  Future<UserModel?> getCurrentUser() async {
     try {
       final value = _preferences.getString(AppStrings.sharedPrefUserKey);
       if (value == null) {
-        throw CacheReadFailure(message: 'No saved user was found.');
+        return null;
       }
 
       final json = jsonDecode(value) as Map<String, dynamic>;

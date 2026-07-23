@@ -1,19 +1,18 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:transient_team_ws/core/error/failure.dart';
+import 'package:transient_team_ws/features/auth/domain/entities/auth_request_entity.dart';
 import 'package:transient_team_ws/features/auth/domain/entities/user_entity.dart';
 
 abstract interface class IAuthRepo {
-  Future<Either<UserEntity, Failure>> signUp({
-    required String email,
-    required String password,
+  Future<Either<Failure, UserEntity>> signUp({
+    required AuthRequestParamEntity authRequestParams,
   });
 
-  Future<Either<UserEntity, Failure>> login({
-    required String email,
-    required String password,
+  Future<Either<Failure, UserEntity>> login({
+    required AuthRequestParamEntity authRequestParams,
   });
 
-  Future<Either<Unit, Failure>> logout();
+  Future<Either<Failure, Unit>> logout();
 
-  Future<Either<UserEntity, Failure>> getCurrentUser();
+  Future<Either<Failure, UserEntity>> getCurrentUser();
 }

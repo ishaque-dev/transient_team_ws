@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:transient_team_ws/core/error/common_failures.dart';
 import 'package:transient_team_ws/features/auth/data/data_sources/i_auth_remote_ds.dart';
+import 'package:transient_team_ws/features/auth/data/models/auth_request_model.dart';
 import 'package:transient_team_ws/features/auth/data/models/user_model.dart';
 
 final class AuthRemoteDsImpl implements IAuthRemoteDs {
@@ -9,13 +10,12 @@ final class AuthRemoteDsImpl implements IAuthRemoteDs {
 
   @override
   Future<UserModel> signUp({
-    required String email,
-    required String password,
+    required AuthRequestParamModel authRequestParmModel,
   }) async {
     try {
       final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: authRequestParmModel.email,
+        password: authRequestParmModel.password,
       );
       return _toUserModel(credential.user);
     } on FirebaseAuthException catch (error) {
@@ -27,13 +27,12 @@ final class AuthRemoteDsImpl implements IAuthRemoteDs {
 
   @override
   Future<UserModel> login({
-    required String email,
-    required String password,
+    required AuthRequestParamModel authRequestParmModel,
   }) async {
     try {
       final credential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: authRequestParmModel.email,
+        password: authRequestParmModel.password,
       );
       return _toUserModel(credential.user);
     } on FirebaseAuthException catch (error) {
