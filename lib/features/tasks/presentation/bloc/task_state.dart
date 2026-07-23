@@ -27,8 +27,10 @@ final class TaskState extends Equatable {
     bool? hasReachedMax,
     String? errorMessage,
     String? query,
-    TaskStatus? filterStatus,
-    TaskPriority? filterPriority,
+    // Use the functional approach or specific methods to handle nulls properly
+    // for fields that are intended to be nullable.
+    TaskStatus? Function()? filterStatus,
+    TaskPriority? Function()? filterPriority,
   }) {
     return TaskState(
       tasks: tasks ?? this.tasks,
@@ -36,8 +38,8 @@ final class TaskState extends Equatable {
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       errorMessage: errorMessage ?? this.errorMessage,
       query: query ?? this.query,
-      filterStatus: filterStatus ?? this.filterStatus,
-      filterPriority: filterPriority ?? this.filterPriority,
+      filterStatus: filterStatus != null ? filterStatus() : this.filterStatus,
+      filterPriority: filterPriority != null ? filterPriority() : this.filterPriority,
     );
   }
 

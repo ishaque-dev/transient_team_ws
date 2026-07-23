@@ -27,11 +27,15 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final DeleteTaskUseCase _deleteTaskUseCase;
 
   TaskBloc({
-    required this._getTasksUseCase,
-    required this._createTaskUseCase,
-    required this._updateTaskUseCase,
-    required this._deleteTaskUseCase,
-  })  : super(const TaskState()) {
+    required GetTasksUseCase getTasksUseCase,
+    required CreateTaskUseCase createTaskUseCase,
+    required UpdateTaskUseCase updateTaskUseCase,
+    required DeleteTaskUseCase deleteTaskUseCase,
+  })  : _getTasksUseCase = getTasksUseCase,
+        _createTaskUseCase = createTaskUseCase,
+        _updateTaskUseCase = updateTaskUseCase,
+        _deleteTaskUseCase = deleteTaskUseCase,
+        super(const TaskState()) {
     on<FetchTasksRequested>(_onFetchTasksRequested);
     on<LoadMoreTasksRequested>(
       _onLoadMoreTasksRequested,
@@ -119,7 +123,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     TaskStatusFilterChanged event,
     Emitter<TaskState> emit,
   ) async {
-    emit(state.copyWith(filterStatus: event.status));
+    emit(state.copyWith(filterStatus: () => event.status));
     add(const FetchTasksRequested());
   }
 
@@ -127,7 +131,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     TaskPriorityFilterChanged event,
     Emitter<TaskState> emit,
   ) async {
-    emit(state.copyWith(filterPriority: event.priority));
+    emit(state.copyWith(filterPriority: () => event.priority));
     add(const FetchTasksRequested());
   }
 

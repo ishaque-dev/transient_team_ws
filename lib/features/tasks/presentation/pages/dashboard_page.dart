@@ -98,7 +98,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           label: 'All Status',
                           isSelected: context.select((TaskBloc bloc) =>
                               bloc.state.filterStatus == null),
-                          onSelected: (selected) {
+                          onSelected: (_) {
                             context.read<TaskBloc>().add(
                                 const TaskStatusFilterChanged(null));
                           },
@@ -108,8 +108,9 @@ class _DashboardPageState extends State<DashboardPage> {
                               isSelected: context.select((TaskBloc bloc) =>
                                   bloc.state.filterStatus == status),
                               onSelected: (selected) {
-                                context.read<TaskBloc>().add(TaskStatusFilterChanged(
-                                    selected ? status : null));
+                                context.read<TaskBloc>().add(
+                                    TaskStatusFilterChanged(
+                                        selected ? status : null));
                               },
                             )),
                         const VerticalDivider(color: Colors.white24),
@@ -117,7 +118,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           label: 'All Priorities',
                           isSelected: context.select((TaskBloc bloc) =>
                               bloc.state.filterPriority == null),
-                          onSelected: (selected) {
+                          onSelected: (_) {
                             context.read<TaskBloc>().add(
                                 const TaskPriorityFilterChanged(null));
                           },
@@ -127,8 +128,9 @@ class _DashboardPageState extends State<DashboardPage> {
                               isSelected: context.select((TaskBloc bloc) =>
                                   bloc.state.filterPriority == priority),
                               onSelected: (selected) {
-                                context.read<TaskBloc>().add(TaskPriorityFilterChanged(
-                                    selected ? priority : null));
+                                context.read<TaskBloc>().add(
+                                    TaskPriorityFilterChanged(
+                                        selected ? priority : null));
                               },
                             )),
                       ],
