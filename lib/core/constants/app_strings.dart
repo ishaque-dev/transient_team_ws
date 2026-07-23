@@ -6,4 +6,5 @@ final class AppStrings {
   static const String responseParsingError =
       'Response received successfully..Unable to parse JSON';
   static const sharedPrefUserKey = 'loggedInUser';
+  static const dbName = 'task.db';
 }
