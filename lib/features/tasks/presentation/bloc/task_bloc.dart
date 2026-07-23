@@ -1,6 +1,6 @@
+import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 import 'package:transient_team_ws/features/tasks/domain/use_cases/create_task_use_case.dart';
@@ -31,14 +31,15 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     required this._createTaskUseCase,
     required this._updateTaskUseCase,
     required this._deleteTaskUseCase,
-  }) : super(const TaskState()) {
+  })  : super(const TaskState()) {
     on<FetchTasksRequested>(_onFetchTasksRequested);
     on<LoadMoreTasksRequested>(
       _onLoadMoreTasksRequested,
       transformer: throttleDroppable(_throttleDuration),
     );
     on<TaskSearchChanged>(_onTaskSearchChanged);
-    on<TaskFilterChanged>(_onTaskFilterChanged);
+    on<TaskStatusFilterChanged>(_onTaskStatusFilterChanged);
+    on<TaskPriorityFilterChanged>(_onTaskPriorityFilterChanged);
     on<CreateTaskRequested>(_onCreateTaskRequested);
     on<UpdateTaskRequested>(_onUpdateTaskRequested);
     on<DeleteTaskRequested>(_onDeleteTaskRequested);
@@ -61,19 +62,15 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     );
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
-      (tasks) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.success,
-          tasks: tasks,
-          hasReachedMax: tasks.length < _tasksLimit,
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        status: TaskBlocStatus.failure,
+        errorMessage: failure.message,
+      )),
+      (tasks) => emit(state.copyWith(
+        status: TaskBlocStatus.success,
+        tasks: tasks,
+        hasReachedMax: tasks.length < _tasksLimit,
+      )),
     );
   }
 
@@ -94,22 +91,18 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     );
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        status: TaskBlocStatus.failure,
+        errorMessage: failure.message,
+      )),
       (tasks) {
-        emit(
-          tasks.isEmpty
-              ? state.copyWith(hasReachedMax: true)
-              : state.copyWith(
-                  status: TaskBlocStatus.success,
-                  tasks: List.of(state.tasks)..addAll(tasks),
-                  hasReachedMax: tasks.length < _tasksLimit,
-                ),
-        );
+        emit(tasks.isEmpty
+            ? state.copyWith(hasReachedMax: true)
+            : state.copyWith(
+                status: TaskBlocStatus.success,
+                tasks: List.of(state.tasks)..addAll(tasks),
+                hasReachedMax: tasks.length < _tasksLimit,
+              ));
       },
     );
   }
@@ -122,16 +115,19 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     add(const FetchTasksRequested());
   }
 
-  Future<void> _onTaskFilterChanged(
-    TaskFilterChanged event,
+  Future<void> _onTaskStatusFilterChanged(
+    TaskStatusFilterChanged event,
     Emitter<TaskState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        filterStatus: event.status,
-        filterPriority: event.priority,
-      ),
-    );
+    emit(state.copyWith(filterStatus: event.status));
+    add(const FetchTasksRequested());
+  }
+
+  Future<void> _onTaskPriorityFilterChanged(
+    TaskPriorityFilterChanged event,
+    Emitter<TaskState> emit,
+  ) async {
+    emit(state.copyWith(filterPriority: event.priority));
     add(const FetchTasksRequested());
   }
 
@@ -142,17 +138,16 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     final result = await _createTaskUseCase(parameters: event.task);
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        status: TaskBlocStatus.failure,
+        errorMessage: failure.message,
+      )),
       (newTask) {
         final updatedTasks = List.of(state.tasks)..insert(0, newTask);
-        emit(
-          state.copyWith(status: TaskBlocStatus.success, tasks: updatedTasks),
-        );
+        emit(state.copyWith(
+          status: TaskBlocStatus.success,
+          tasks: updatedTasks,
+        ));
       },
     );
   }
@@ -164,20 +159,19 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     final result = await _updateTaskUseCase(parameters: event.task);
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        status: TaskBlocStatus.failure,
+        errorMessage: failure.message,
+      )),
       (updatedTask) {
         final updatedTasks = state.tasks.map((task) {
           return task.id == updatedTask.id ? updatedTask : task;
         }).toList();
 
-        emit(
-          state.copyWith(status: TaskBlocStatus.success, tasks: updatedTasks),
-        );
+        emit(state.copyWith(
+          status: TaskBlocStatus.success,
+          tasks: updatedTasks,
+        ));
       },
     );
   }
@@ -189,20 +183,19 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     final result = await _deleteTaskUseCase(parameters: event.taskId);
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TaskBlocStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
+      (failure) => emit(state.copyWith(
+        status: TaskBlocStatus.failure,
+        errorMessage: failure.message,
+      )),
       (_) {
         final updatedTasks = state.tasks
             .where((task) => task.id != event.taskId)
             .toList();
 
-        emit(
-          state.copyWith(status: TaskBlocStatus.success, tasks: updatedTasks),
-        );
+        emit(state.copyWith(
+          status: TaskBlocStatus.success,
+          tasks: updatedTasks,
+        ));
       },
     );
   }

@@ -10,7 +10,18 @@ abstract interface class ITaskRemoteDs {
     String? priority,
   });
 
-  Future<TaskModel> createTask(TaskModel task);
-  Future<TaskModel> updateTask(TaskModel task);
-  Future<void> deleteTask(String id);
+  Future<TaskModel> createTask({
+    required String userId,
+    required TaskModel task,
+  });
+
+  Future<TaskModel> updateTask({
+    required String userId,
+    required TaskModel task,
+  });
+
+  Future<void> deleteTask({
+    required String userId,
+    required String taskId,
+  });
 }

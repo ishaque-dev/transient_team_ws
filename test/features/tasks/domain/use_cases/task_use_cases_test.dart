@@ -75,7 +75,7 @@ void main() {
     test('should call repository with correct params', () async {
       // arrange
       final useCase = GetTasksUseCase(mockRepo);
-      const params = GetTasksParams(query: 'search', limit: 5);
+      const params = GetTasksParams(query: 'search', limit: 5, priority: TaskPriority.high);
       when(() => mockRepo.getTasks(
             offset: any(named: 'offset'),
             limit: any(named: 'limit'),
@@ -91,7 +91,7 @@ void main() {
       expect(result.isRight(), true);
       result.fold((l) => fail('Should be right'), (r) => expect(r, [tTask]));
       
-      verify(() => mockRepo.getTasks(offset: 0, limit: 5, query: 'search')).called(1);
+      verify(() => mockRepo.getTasks(offset: 0, limit: 5, query: 'search', priority: TaskPriority.high)).called(1);
     });
   });
 

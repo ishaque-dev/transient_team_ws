@@ -23,14 +23,20 @@ final class TaskSearchChanged extends TaskEvent {
   List<Object?> get props => [query];
 }
 
-final class TaskFilterChanged extends TaskEvent {
+final class TaskStatusFilterChanged extends TaskEvent {
   final TaskStatus? status;
-  final TaskPriority? priority;
-
-  const TaskFilterChanged({this.status, this.priority});
+  const TaskStatusFilterChanged(this.status);
 
   @override
-  List<Object?> get props => [status, priority];
+  List<Object?> get props => [status];
+}
+
+final class TaskPriorityFilterChanged extends TaskEvent {
+  final TaskPriority? priority;
+  const TaskPriorityFilterChanged(this.priority);
+
+  @override
+  List<Object?> get props => [priority];
 }
 
 final class CreateTaskRequested extends TaskEvent {

@@ -7,7 +7,9 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
 
   TaskRemoteDsImpl(this._firestore);
 
-  static const String _collectionPath = 'tasks';
+  CollectionReference<Map<String, dynamic>> _userTasks(String userId) {
+    return _firestore.collection('users').doc(userId).collection('tasks');
+  }
 
   @override
   Future<List<TaskModel>> getTasks({
@@ -18,42 +20,48 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     String? status,
     String? priority,
   }) async {
-    var firestoreQuery = _firestore
-        .collection(_collectionPath)
-        .where('assignedUserId', isEqualTo: userId);
+    var firestoreQuery = _userTasks(userId);
+
+    Query<Map<String, dynamic>> finalQuery = firestoreQuery;
 
     if (status != null) {
-      firestoreQuery = firestoreQuery.where('status', isEqualTo: status);
+      finalQuery = finalQuery.where('status', isEqualTo: status);
     }
 
     if (priority != null) {
-      firestoreQuery = firestoreQuery.where('priority', isEqualTo: priority);
+      finalQuery = finalQuery.where('priority', isEqualTo: priority);
     }
 
-    // Firestore pagination logic would go here in a real app.
-    // We limit and fetch.
-    final snapshot = await firestoreQuery.limit(limit + offset).get();
-    
+    final snapshot = await finalQuery.limit(limit + offset).get();
+
     return snapshot.docs
         .map((doc) => TaskModel.fromJson(doc.data()))
         .toList();
   }
 
   @override
-  Future<TaskModel> createTask(TaskModel task) async {
-    // Use the client-generated UUID as the document ID
-    await _firestore.collection(_collectionPath).doc(task.id).set(task.toJson());
+  Future<TaskModel> createTask({
+    required String userId,
+    required TaskModel task,
+  }) async {
+    await _userTasks(userId).doc(task.id).set(task.toJson());
     return task;
   }
 
   @override
-  Future<TaskModel> updateTask(TaskModel task) async {
-    await _firestore.collection(_collectionPath).doc(task.id).update(task.toJson());
+  Future<TaskModel> updateTask({
+    required String userId,
+    required TaskModel task,
+  }) async {
+    await _userTasks(userId).doc(task.id).update(task.toJson());
     return task;
   }
 
   @override
-  Future<void> deleteTask(String id) async {
-    await _firestore.collection(_collectionPath).doc(id).delete();
+  Future<void> deleteTask({
+    required String userId,
+    required String taskId,
+  }) async {
+    await _userTasks(userId).doc(taskId).delete();
   }
 }

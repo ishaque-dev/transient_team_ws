@@ -102,6 +102,40 @@ void main() {
     );
   });
 
+  group('TaskStatusFilterChanged', () {
+    blocTest<TaskBloc, TaskState>(
+      'should update filterStatus and trigger fetch',
+      build: () {
+        when(() => mockGetTasksUseCase(parameters: any(named: 'parameters')))
+            .thenAnswer((_) async => Right([tTask]));
+        return taskBloc;
+      },
+      act: (bloc) => bloc.add(const TaskStatusFilterChanged(TaskStatus.completed)),
+      expect: () => [
+        const TaskState(filterStatus: TaskStatus.completed),
+        const TaskState(status: TaskBlocStatus.loading, filterStatus: TaskStatus.completed),
+        TaskState(status: TaskBlocStatus.success, tasks: [tTask], hasReachedMax: true, filterStatus: TaskStatus.completed),
+      ],
+    );
+  });
+
+  group('TaskPriorityFilterChanged', () {
+    blocTest<TaskBloc, TaskState>(
+      'should update filterPriority and trigger fetch',
+      build: () {
+        when(() => mockGetTasksUseCase(parameters: any(named: 'parameters')))
+            .thenAnswer((_) async => Right([tTask]));
+        return taskBloc;
+      },
+      act: (bloc) => bloc.add(const TaskPriorityFilterChanged(TaskPriority.high)),
+      expect: () => [
+        const TaskState(filterPriority: TaskPriority.high),
+        const TaskState(status: TaskBlocStatus.loading, filterPriority: TaskPriority.high),
+        TaskState(status: TaskBlocStatus.success, tasks: [tTask], hasReachedMax: true, filterPriority: TaskPriority.high),
+      ],
+    );
+  });
+
   group('CreateTaskRequested', () {
     blocTest<TaskBloc, TaskState>(
       'should add task to the list when successful',

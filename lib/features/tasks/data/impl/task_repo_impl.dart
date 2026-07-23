@@ -19,6 +19,14 @@ class TaskRepoImpl implements ITaskRepo {
     required this._authLocalDs,
   });
 
+  Future<String> _getUserId() async {
+    final user = await _authLocalDs.getCurrentUser();
+    if (user == null) {
+      throw UnauthorizedFailure(message: 'User not logged in');
+    }
+    return user.id;
+  }
+
   @override
   Future<Either<Failure, List<TaskEntity>>> getTasks({
     int offset = 0,
@@ -28,14 +36,11 @@ class TaskRepoImpl implements ITaskRepo {
     TaskPriority? priority,
   }) async {
     try {
-      final currentUser = await _authLocalDs.getCurrentUser();
-      if (currentUser == null) {
-        return Left(UnauthorizedFailure(message: 'User not logged in'));
-      }
+      final userId = await _getUserId();
 
       // 1. Fetch from remote (Source of Truth)
       final remoteTasks = await _remoteDs.getTasks(
-        userId: currentUser.id,
+        userId: userId,
         offset: offset,
         limit: limit,
         query: query,
@@ -89,18 +94,17 @@ class TaskRepoImpl implements ITaskRepo {
   }
 
   @override
-  Future<Either<Failure, TaskEntity>> createTask({
-    required TaskEntity task,
-  }) async {
+  Future<Either<Failure, TaskEntity>> createTask({required TaskEntity task}) async {
     try {
+      final userId = await _getUserId();
       final taskModel = TaskModel.fromEntity(task);
-
+      
       // 1. Sync to remote (Source of Truth)
-      await _remoteDs.createTask(taskModel);
-
+      await _remoteDs.createTask(userId: userId, task: taskModel);
+      
       // 2. Insert into local
       await _localDs.insertTask(taskModel);
-
+      
       return Right(task);
     } catch (e) {
       return Left(AppErrorHandler.handle(e));
@@ -108,18 +112,17 @@ class TaskRepoImpl implements ITaskRepo {
   }
 
   @override
-  Future<Either<Failure, TaskEntity>> updateTask({
-    required TaskEntity task,
-  }) async {
+  Future<Either<Failure, TaskEntity>> updateTask({required TaskEntity task}) async {
     try {
+      final userId = await _getUserId();
       final taskModel = TaskModel.fromEntity(task);
-
+      
       // 1. Update remote
-      await _remoteDs.updateTask(taskModel);
-
+      await _remoteDs.updateTask(userId: userId, task: taskModel);
+      
       // 2. Update local
       await _localDs.updateTask(taskModel);
-
+      
       return Right(task);
     } catch (e) {
       return Left(AppErrorHandler.handle(e));
@@ -129,7 +132,8 @@ class TaskRepoImpl implements ITaskRepo {
   @override
   Future<Either<Failure, Unit>> deleteTask({required String id}) async {
     try {
-      await _remoteDs.deleteTask(id);
+      final userId = await _getUserId();
+      await _remoteDs.deleteTask(userId: userId, taskId: id);
       await _localDs.deleteTask(id);
       return const Right(unit);
     } catch (e) {

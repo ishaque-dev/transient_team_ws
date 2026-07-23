@@ -74,24 +74,28 @@ void main() {
           )).thenAnswer((_) async => [tTaskModel]);
 
       // act
-      final result = await repository.getTasks();
+      final result = await repository.getTasks(priority: TaskPriority.high);
 
       // assert
       expect(result.isRight(), true);
       result.fold((l) => fail('Should be right'), (r) => expect(r, [tTaskEntity]));
       
       verify(() => mockAuthLocalDs.getCurrentUser()).called(1);
-      verify(() => mockRemoteDs.getTasks(userId: tUserId, offset: 0, limit: 10)).called(1);
+      verify(() => mockRemoteDs.getTasks(userId: tUserId, offset: 0, limit: 10, priority: 'high')).called(1);
       verify(() => mockLocalDs.cacheTasks([tTaskModel])).called(1);
-      verify(() => mockLocalDs.getTasks(offset: 0, limit: 10)).called(1);
+      verify(() => mockLocalDs.getTasks(offset: 0, limit: 10, priority: 'high')).called(1);
     });
   });
 
   group('createTask', () {
     test('should call local insert, then remote, and return entity', () async {
       // arrange
+      when(() => mockAuthLocalDs.getCurrentUser()).thenAnswer((_) async => tUserModel);
       when(() => mockLocalDs.insertTask(any())).thenAnswer((_) async => {});
-      when(() => mockRemoteDs.createTask(any())).thenAnswer((_) async => tTaskModel);
+      when(() => mockRemoteDs.createTask(
+            userId: any(named: 'userId'),
+            task: any(named: 'task'),
+          )).thenAnswer((_) async => tTaskModel);
 
       // act
       final result = await repository.createTask(task: tTaskEntity);
@@ -100,8 +104,30 @@ void main() {
       expect(result.isRight(), true);
       result.fold((l) => fail('Should be right'), (r) => expect(r, tTaskEntity));
 
+      verify(() => mockAuthLocalDs.getCurrentUser()).called(1);
       verify(() => mockLocalDs.insertTask(any())).called(1);
-      verify(() => mockRemoteDs.createTask(any())).called(1);
+      verify(() => mockRemoteDs.createTask(userId: tUserId, task: any(named: 'task'))).called(1);
+    });
+  });
+
+  group('deleteTask', () {
+    test('should call remote, then local delete', () async {
+      // arrange
+      when(() => mockAuthLocalDs.getCurrentUser()).thenAnswer((_) async => tUserModel);
+      when(() => mockRemoteDs.deleteTask(
+            userId: any(named: 'userId'),
+            taskId: any(named: 'taskId'),
+          )).thenAnswer((_) async => {});
+      when(() => mockLocalDs.deleteTask(any())).thenAnswer((_) async => {});
+
+      // act
+      final result = await repository.deleteTask(id: 'uuid-123');
+
+      // assert
+      expect(result.isRight(), true);
+      verify(() => mockAuthLocalDs.getCurrentUser()).called(1);
+      verify(() => mockRemoteDs.deleteTask(userId: tUserId, taskId: 'uuid-123')).called(1);
+      verify(() => mockLocalDs.deleteTask('uuid-123')).called(1);
     });
   });
 }
