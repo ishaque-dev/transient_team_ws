@@ -5,4 +5,5 @@ final class AppStrings {
       'Something went wrong, please try again later.';
   static const String responseParsingError =
       'Response received successfully..Unable to parse JSON';
+  static const sharedPrefUserKey = 'loggedInUser';
 }
