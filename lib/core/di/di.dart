@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transient_team_ws/core/database/db.dart';
@@ -27,9 +28,14 @@ import 'package:transient_team_ws/features/tasks/domain/use_cases/get_tasks_use_
 import 'package:transient_team_ws/features/tasks/domain/use_cases/update_task_use_case.dart';
 import 'package:transient_team_ws/features/tasks/presentation/bloc/task_bloc.dart';
 
+import '../../firebase_options.dart';
+
 final GetIt serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // Core
   final sharedPreferences = await SharedPreferences.getInstance();
   serviceLocator.registerLazySingleton(() => sharedPreferences);
@@ -62,10 +68,18 @@ void _initAuth() {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => LoginUseCase(authRepository: serviceLocator()));
-  serviceLocator.registerLazySingleton(() => SignUpUseCase(authRepository: serviceLocator()));
-  serviceLocator.registerLazySingleton(() => LogoutUseCase(authRepository: serviceLocator()));
-  serviceLocator.registerLazySingleton(() => GetLoggedInUserUseCase(authRepository: serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => LoginUseCase(authRepository: serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => SignUpUseCase(authRepository: serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => LogoutUseCase(authRepository: serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => GetLoggedInUserUseCase(authRepository: serviceLocator()),
+  );
 
   // Bloc
   serviceLocator.registerFactory(
@@ -98,10 +112,18 @@ void _initTasks() {
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => GetTasksUseCase(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => CreateTaskUseCase(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => UpdateTaskUseCase(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => DeleteTaskUseCase(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => GetTaskByIdUseCase(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => CreateTaskUseCase(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => UpdateTaskUseCase(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => DeleteTaskUseCase(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => GetTaskByIdUseCase(serviceLocator()),
+  );
 
   // Bloc
   serviceLocator.registerFactory(
