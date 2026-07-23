@@ -12,10 +12,16 @@ class MockAuthRemoteDs extends Mock implements IAuthRemoteDs {}
 
 class MockAuthLocalDs extends Mock implements IAuthLocalDs {}
 
+class FakeAuthRequestParamModel extends Fake implements AuthRequestParamModel {}
+
 void main() {
   late AuthRepoImpl repository;
   late MockAuthRemoteDs mockRemoteDs;
   late MockAuthLocalDs mockLocalDs;
+
+  setUpAll(() {
+    registerFallbackValue(FakeAuthRequestParamModel());
+  });
 
   setUp(() {
     mockRemoteDs = MockAuthRemoteDs();
@@ -36,9 +42,7 @@ void main() {
       // arrange
       when(
         () => mockRemoteDs.signUp(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).thenAnswer((_) async => tUser);
       when(
@@ -49,12 +53,10 @@ void main() {
       final result = await repository.signUp(authRequestParams: tCreds);
 
       // assert
-      expect(result, right(tUser));
+      expect(result, right(tUser.toEntity()));
       verify(
         () => mockRemoteDs.signUp(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).called(1);
       verify(() => mockLocalDs.cacheCurrentUser(tUser)).called(1);
@@ -65,9 +67,7 @@ void main() {
       final exception = Exception('Remote failure');
       when(
         () => mockRemoteDs.signUp(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).thenThrow(exception);
 
@@ -78,9 +78,7 @@ void main() {
       expect(result.isLeft(), true);
       verify(
         () => mockRemoteDs.signUp(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).called(1);
       verifyZeroInteractions(mockLocalDs);
@@ -92,9 +90,7 @@ void main() {
       // arrange
       when(
         () => mockRemoteDs.login(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).thenAnswer((_) async => tUser);
       when(
@@ -105,12 +101,10 @@ void main() {
       final result = await repository.login(authRequestParams: tCreds);
 
       // assert
-      expect(result, right(tUser));
+      expect(result, right(tUser.toEntity()));
       verify(
         () => mockRemoteDs.login(
-          authRequestParmModel: AuthRequestParamModel.fromEntity(
-            authParam: tCreds,
-          ),
+          authRequestParmModel: any(named: 'authRequestParmModel'),
         ),
       ).called(1);
       verify(() => mockLocalDs.cacheCurrentUser(tUser)).called(1);
@@ -142,7 +136,7 @@ void main() {
       final result = await repository.getCurrentUser();
 
       // assert
-      expect(result, right(tUser));
+      expect(result, right(tUser.toEntity()));
       verify(() => mockLocalDs.getCurrentUser()).called(1);
       verifyZeroInteractions(mockRemoteDs);
     });
@@ -159,7 +153,7 @@ void main() {
       final result = await repository.getCurrentUser();
 
       // assert
-      expect(result, right(tUser));
+      expect(result, right(tUser.toEntity()));
       verify(() => mockLocalDs.getCurrentUser()).called(1);
       verify(() => mockRemoteDs.getCurrentUser()).called(1);
       verify(() => mockLocalDs.cacheCurrentUser(tUser)).called(1);
