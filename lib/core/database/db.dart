@@ -21,25 +21,32 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: (db, version) async {
-        // Create tasks table
-        await db.execute('''CREATE TABLE tasks(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          description TEXT,
-          priority TEXT NOT NULL,
-          dueDate TEXT NOT NULL,
-          status TEXT NOT NULL,
-          assignedUserId TEXT
-        )''');
-
-        // Add index for status and priority for faster filtering
-        await db.execute(
-          '''CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);''',
-        );
-        await db.execute(
-          '''CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);''',
-        );
+        await _createTables(db);
       },
+    );
+  }
+
+  Future<void> _createTables(Database db) async {
+    // Create tasks table with TEXT primary key for UUIDs
+    await db.execute('''CREATE TABLE tasks(
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      priority TEXT NOT NULL,
+      dueDate TEXT NOT NULL,
+      status TEXT NOT NULL,
+      assignedUserId TEXT
+    )''');
+
+    // Add indices for performance
+    await db.execute(
+      '''CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);''',
+    );
+    await db.execute(
+      '''CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);''',
+    );
+    await db.execute(
+      '''CREATE INDEX IF NOT EXISTS idx_tasks_title ON tasks(title);''',
     );
   }
 }

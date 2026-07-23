@@ -2,7 +2,7 @@ import 'package:transient_team_ws/features/tasks/data/models/task_enum_model.dar
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 
 class TaskModel {
-  final int? id;
+  final String id;
   final String title;
   final String description;
   final TaskPriorityModel priority;
@@ -11,7 +11,7 @@ class TaskModel {
   final String? assignedUserId;
 
   const TaskModel({
-    this.id,
+    required this.id,
     required this.title,
     required this.description,
     required this.priority,
@@ -22,7 +22,7 @@ class TaskModel {
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     return TaskModel(
-      id: json['id'] as int?,
+      id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       priority: TaskPriorityModel.values.byName(json['priority'] as String),
@@ -34,7 +34,7 @@ class TaskModel {
 
   Map<String, dynamic> toJson() {
     return {
-      if (id != null) 'id': id,
+      'id': id,
       'title': title,
       'description': description,
       'priority': priority.name,

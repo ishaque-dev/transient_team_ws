@@ -13,7 +13,7 @@ enum TaskStatus {
 }
 
 class TaskEntity extends Equatable {
-  final int? id;
+  final String id;
   final String title;
   final String description;
   final TaskPriority priority;
@@ -22,7 +22,7 @@ class TaskEntity extends Equatable {
   final String? assignedUserId;
 
   const TaskEntity({
-    this.id,
+    required this.id,
     required this.title,
     required this.description,
     required this.priority,
@@ -43,7 +43,7 @@ class TaskEntity extends Equatable {
       ];
 
   TaskEntity copyWith({
-    int? id,
+    String? id,
     String? title,
     String? description,
     TaskPriority? priority,

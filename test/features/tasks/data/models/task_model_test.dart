@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transient_team_ws/features/tasks/data/models/task_enum_model.dart';
 import 'package:transient_team_ws/features/tasks/data/models/task_model.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 
 void main() {
   final tDateTime = DateTime(2023, 10, 27, 12, 30);
   final tTaskEntity = TaskEntity(
-    id: 1,
+    id: 'uuid-1',
     title: 'Test Task',
     description: 'Test Description',
     priority: TaskPriority.high,
@@ -15,7 +16,7 @@ void main() {
   );
 
   final tTaskModel = TaskModel(
-    id: 1,
+    id: 'uuid-1',
     title: 'Test Task',
     description: 'Test Description',
     priority: TaskPriorityModel.high,
@@ -48,7 +49,7 @@ void main() {
   group('fromJson / toJson', () {
     test('should return a valid model from JSON', () {
       final Map<String, dynamic> jsonMap = {
-        'id': 1,
+        'id': 'uuid-1',
         'title': 'Test Task',
         'description': 'Test Description',
         'priority': 'high',
@@ -63,7 +64,7 @@ void main() {
 
     test('should return a JSON map containing proper data', () {
       final result = tTaskModel.toJson();
-      expect(result['id'], 1);
+      expect(result['id'], 'uuid-1');
       expect(result['priority'], 'high');
     });
   });
