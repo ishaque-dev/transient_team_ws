@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:transient_team_ws/core/constants/app_strings.dart';
 import 'package:transient_team_ws/core/di/di.dart';
 import 'package:transient_team_ws/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
@@ -53,7 +54,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Builder(builder: (context) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('My Workspace'),
+            title: const Text(AppStrings.myWorkspace),
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
             actions: [
@@ -75,7 +76,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           .read<TaskBloc>()
                           .add(TaskSearchChanged(query)),
                       decoration: InputDecoration(
-                        hintText: 'Search tasks...',
+                        hintText: AppStrings.searchTasks,
                         prefixIcon: const Icon(Icons.search, color: Colors.white70),
                         filled: true,
                         fillColor: Colors.white.withAlpha(40),
@@ -95,7 +96,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: Row(
                       children: [
                         _FilterChip(
-                          label: 'All Status',
+                          label: AppStrings.allStatus,
                           isSelected: context.select((TaskBloc bloc) =>
                               bloc.state.filterStatus == null),
                           onSelected: (_) {
@@ -115,7 +116,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             )),
                         const VerticalDivider(color: Colors.white24),
                         _FilterChip(
-                          label: 'All Priorities',
+                          label: AppStrings.allPriorities,
                           isSelected: context.select((TaskBloc bloc) =>
                               bloc.state.filterPriority == null),
                           onSelected: (_) {
@@ -153,13 +154,13 @@ class _DashboardPageState extends State<DashboardPage> {
                     children: [
                       const Icon(Icons.error_outline, size: 64, color: Colors.red),
                       const SizedBox(height: 16),
-                      Text(state.errorMessage ?? 'Failed to load tasks'),
+                      Text(state.errorMessage ?? AppStrings.failedToLoadTasks),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => context
                             .read<TaskBloc>()
                             .add(const FetchTasksRequested()),
-                        child: const Text('Retry'),
+                        child: const Text(AppStrings.retry),
                       ),
                     ],
                   ),
@@ -172,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     children: [
                       const Icon(Icons.task_outlined, size: 64, color: Colors.grey),
                       const SizedBox(height: 16),
-                      const Text('No tasks found. Get started!'),
+                      const Text(AppStrings.noTasksFound),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {
@@ -186,7 +187,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           );
                         },
-                        child: const Text('Create Your First Task'),
+                        child: const Text(AppStrings.createFirstTask),
                       ),
                     ],
                   ),

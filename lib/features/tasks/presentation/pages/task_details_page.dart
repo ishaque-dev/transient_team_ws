@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:transient_team_ws/core/constants/app_strings.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 import 'package:transient_team_ws/features/tasks/presentation/bloc/task_bloc.dart';
 import 'package:transient_team_ws/features/tasks/presentation/pages/task_form_page.dart';
@@ -14,12 +15,12 @@ class TaskDetailsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
+        title: const Text(AppStrings.deleteDialogTitle),
+        content: const Text(AppStrings.deleteDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+            child: const Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -27,7 +28,7 @@ class TaskDetailsPage extends StatelessWidget {
               Navigator.pop(dialogContext); // Pop Dialog
               Navigator.pop(context); // Pop Details Page
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -46,7 +47,7 @@ class TaskDetailsPage extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Task Details'),
+            title: const Text(AppStrings.taskDetails),
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
             actions: [
@@ -100,7 +101,7 @@ class TaskDetailsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Description',
+                  AppStrings.description,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
@@ -113,12 +114,12 @@ class TaskDetailsPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 _buildDetailRow(
                     Icons.calendar_today,
-                    'Due Date',
+                    AppStrings.dueDate,
                     DateFormat('EEEE, MMM dd, yyyy')
                         .format(currentTask.dueDate)),
                 const SizedBox(height: 12),
-                _buildDetailRow(Icons.person_outline, 'Assigned To',
-                    currentTask.assignedUserId ?? 'Unassigned'),
+                _buildDetailRow(Icons.person_outline, AppStrings.assignedTo,
+                    currentTask.assignedUserId ?? AppStrings.unassigned),
                 const SizedBox(height: 48),
                 _buildActionButton(context, currentTask),
               ],
@@ -177,7 +178,7 @@ class TaskDetailsPage extends StatelessWidget {
           context.read<TaskBloc>().add(UpdateTaskRequested(updatedTask));
         },
         icon: Icon(isCompleted ? Icons.replay : Icons.check_circle_outline),
-        label: Text(isCompleted ? 'Reopen Task' : 'Mark as Completed'),
+        label: Text(isCompleted ? AppStrings.reopenTask : AppStrings.markAsCompleted),
         style: ElevatedButton.styleFrom(
           backgroundColor: isCompleted ? Colors.orange : Colors.green,
           foregroundColor: Colors.white,

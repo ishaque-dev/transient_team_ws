@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:transient_team_ws/core/constants/app_strings.dart';
 import 'package:transient_team_ws/features/auth/presentation/bloc/auth_bloc.dart';
 
 class AuthPage extends StatefulWidget {
@@ -27,8 +28,6 @@ class _AuthPageState extends State<AuthPage> {
   void _toggleMode() {
     setState(() {
       _isLogin = !_isLogin;
-      // We explicitly DO NOT reset the form here to preserve email if the user
-      // is switching between modes, but we clear validation errors.
     });
   }
 
@@ -84,7 +83,7 @@ class _AuthPageState extends State<AuthPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _isLogin ? 'Welcome Back' : 'Create Account',
+                    _isLogin ? AppStrings.welcomeBack : AppStrings.createAccount,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -95,19 +94,19 @@ class _AuthPageState extends State<AuthPage> {
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
+                      labelText: AppStrings.email,
                       prefixIcon: Icon(Icons.email_outlined),
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter email';
+                        return AppStrings.enterEmail;
                       }
                       if (!RegExp(
                         r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                       ).hasMatch(value)) {
-                        return 'Enter a valid email';
+                        return AppStrings.enterValidEmail;
                       }
                       return null;
                     },
@@ -116,17 +115,17 @@ class _AuthPageState extends State<AuthPage> {
                   TextFormField(
                     controller: _passwordController,
                     decoration: const InputDecoration(
-                      labelText: 'Password',
+                      labelText: AppStrings.password,
                       prefixIcon: Icon(Icons.lock_outline),
                       border: OutlineInputBorder(),
                     ),
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter password';
+                        return AppStrings.enterPassword;
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return AppStrings.passwordTooShort;
                       }
                       return null;
                     },
@@ -136,14 +135,14 @@ class _AuthPageState extends State<AuthPage> {
                     TextFormField(
                       controller: _confirmPasswordController,
                       decoration: const InputDecoration(
-                        labelText: 'Confirm Password',
+                        labelText: AppStrings.confirmPassword,
                         prefixIcon: Icon(Icons.lock_reset),
                         border: OutlineInputBorder(),
                       ),
                       obscureText: true,
                       validator: (value) {
                         if (value != _passwordController.text) {
-                          return 'Passwords do not match';
+                          return AppStrings.passwordsDoNotMatch;
                         }
                         return null;
                       },
@@ -176,7 +175,7 @@ class _AuthPageState extends State<AuthPage> {
                                 ),
                               )
                             : Text(
-                                _isLogin ? 'Login' : 'Sign Up',
+                                _isLogin ? AppStrings.login : AppStrings.signUp,
                                 style: const TextStyle(fontSize: 16),
                               ),
                       );
@@ -187,8 +186,8 @@ class _AuthPageState extends State<AuthPage> {
                     onPressed: _toggleMode,
                     child: Text(
                       _isLogin
-                          ? 'Don\'t have an account? Sign Up'
-                          : 'Already have an account? Login',
+                          ? AppStrings.dontHaveAccount
+                          : AppStrings.alreadyHaveAccount,
                     ),
                   ),
                 ],

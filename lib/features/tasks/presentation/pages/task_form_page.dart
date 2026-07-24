@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:transient_team_ws/core/constants/app_strings.dart';
 import 'package:transient_team_ws/core/constants/mock_data.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 import 'package:transient_team_ws/features/tasks/presentation/bloc/task_bloc.dart';
@@ -84,7 +85,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Task' : 'New Task'),
+        title: Text(_isEditing ? AppStrings.editTask : AppStrings.newTask),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
       ),
@@ -98,26 +99,26 @@ class _TaskFormPageState extends State<TaskFormPage> {
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
-                  labelText: 'Title',
+                  labelText: AppStrings.title,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Enter title' : null,
+                    (value == null || value.isEmpty) ? AppStrings.enterTitle : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
-                  labelText: 'Description',
+                  labelText: AppStrings.description,
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
                 validator: (value) => (value == null || value.isEmpty)
-                    ? 'Enter description'
+                    ? AppStrings.enterDescription
                     : null,
               ),
               const SizedBox(height: 16),
-              const Text('Priority',
+              const Text(AppStrings.priority,
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               DropdownButtonFormField<TaskPriority>(
@@ -133,12 +134,12 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               const SizedBox(height: 16),
-              const Text('Assign To',
+              const Text(AppStrings.assignTo,
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedAssignee,
-                hint: const Text('Select a team member'),
+                hint: const Text(AppStrings.selectTeamMember),
                 items: MockData.teamMembers.map((member) {
                   return DropdownMenuItem(
                     value: member,
@@ -151,7 +152,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
               ),
               if (_isEditing) ...[
                 const SizedBox(height: 16),
-                const Text('Status',
+                const Text(AppStrings.status,
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<TaskStatus>(
@@ -168,7 +169,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 ),
               ],
               const SizedBox(height: 16),
-              const Text('Due Date',
+              const Text(AppStrings.dueDate,
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               InkWell(
@@ -192,7 +193,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Save Task', style: TextStyle(fontSize: 16)),
+                child: const Text(AppStrings.saveTask, style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
