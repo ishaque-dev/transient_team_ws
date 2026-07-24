@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:transient_team_ws/core/config/app_config.dart';
 import 'package:transient_team_ws/core/database/db.dart';
 import 'package:transient_team_ws/features/auth/data/data_sources/i_auth_local_ds.dart';
 import 'package:transient_team_ws/features/auth/data/data_sources/i_auth_remote_ds.dart';
@@ -32,7 +33,10 @@ import '../../firebase_options.dart';
 
 final GetIt serviceLocator = GetIt.instance;
 
-Future<void> initDependencies() async {
+Future<void> initDependencies(AppConfig config) async {
+  // Register App Config
+  serviceLocator.registerLazySingleton(() => config);
+
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -94,8 +98,10 @@ void _initAuth() {
 
 void _initTasks() {
   // Data Sources
+  final config = serviceLocator<AppConfig>();
+  
   serviceLocator.registerLazySingleton<ITaskRemoteDs>(
-    () => TaskRemoteDsImpl(serviceLocator()),
+    () => TaskRemoteDsImpl(serviceLocator(), config.userCollection),
   );
   serviceLocator.registerLazySingleton<ITaskLocalDs>(
     () => TaskLocalDsImpl(serviceLocator()),

@@ -5,11 +5,12 @@ import 'package:transient_team_ws/features/tasks/data/models/task_model.dart';
 
 class TaskRemoteDsImpl implements ITaskRemoteDs {
   final FirebaseFirestore _firestore;
+  final String _userCollection;
 
-  TaskRemoteDsImpl(this._firestore);
+  TaskRemoteDsImpl(this._firestore, this._userCollection);
 
   CollectionReference<Map<String, dynamic>> _userTasks(String userId) {
-    return _firestore.collection('users').doc(userId).collection('tasks');
+    return _firestore.collection(_userCollection).doc(userId).collection('tasks');
   }
 
   @override
@@ -39,6 +40,8 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
       return snapshot.docs
           .map((doc) => TaskModel.fromJson(doc.data()))
           .toList();
+    } on FirebaseException catch (e) {
+      throw AppErrorHandler.fromFirebaseException(e);
     } catch (error) {
       throw AppErrorHandler.handle(error);
     }
@@ -52,6 +55,8 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     try {
       await _userTasks(userId).doc(task.id).set(task.toJson());
       return task;
+    } on FirebaseException catch (e) {
+      throw AppErrorHandler.fromFirebaseException(e);
     } catch (error) {
       throw AppErrorHandler.handle(error);
     }
@@ -65,6 +70,8 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     try {
       await _userTasks(userId).doc(task.id).update(task.toJson());
       return task;
+    } on FirebaseException catch (e) {
+      throw AppErrorHandler.fromFirebaseException(e);
     } catch (error) {
       throw AppErrorHandler.handle(error);
     }
@@ -77,6 +84,8 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
   }) async {
     try {
       await _userTasks(userId).doc(taskId).delete();
+    } on FirebaseException catch (e) {
+      throw AppErrorHandler.fromFirebaseException(e);
     } catch (error) {
       throw AppErrorHandler.handle(error);
     }

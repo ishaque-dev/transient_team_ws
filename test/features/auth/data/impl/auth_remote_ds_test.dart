@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:transient_team_ws/core/error/common_failures.dart';
 import 'package:transient_team_ws/features/auth/data/impl/auth_remote_ds_impl.dart';
 import 'package:transient_team_ws/features/auth/data/models/auth_request_model.dart';
-import 'package:transient_team_ws/features/auth/data/models/user_model.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 class MockUserCredential extends Mock implements UserCredential {}
