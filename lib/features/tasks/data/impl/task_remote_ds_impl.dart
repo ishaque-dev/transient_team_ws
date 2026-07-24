@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:transient_team_ws/core/error/common_failures.dart';
 import 'package:transient_team_ws/features/tasks/data/data_sources/i_task_remote_ds.dart';
 import 'package:transient_team_ws/features/tasks/data/models/task_model.dart';
 
@@ -20,23 +21,27 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     String? status,
     String? priority,
   }) async {
-    var firestoreQuery = _userTasks(userId);
+    try {
+      var firestoreQuery = _userTasks(userId);
 
-    Query<Map<String, dynamic>> finalQuery = firestoreQuery;
+      Query<Map<String, dynamic>> finalQuery = firestoreQuery;
 
-    if (status != null) {
-      finalQuery = finalQuery.where('status', isEqualTo: status);
+      if (status != null) {
+        finalQuery = finalQuery.where('status', isEqualTo: status);
+      }
+
+      if (priority != null) {
+        finalQuery = finalQuery.where('priority', isEqualTo: priority);
+      }
+
+      final snapshot = await finalQuery.limit(limit + offset).get();
+
+      return snapshot.docs
+          .map((doc) => TaskModel.fromJson(doc.data()))
+          .toList();
+    } catch (error) {
+      throw AppErrorHandler.handle(error);
     }
-
-    if (priority != null) {
-      finalQuery = finalQuery.where('priority', isEqualTo: priority);
-    }
-
-    final snapshot = await finalQuery.limit(limit + offset).get();
-
-    return snapshot.docs
-        .map((doc) => TaskModel.fromJson(doc.data()))
-        .toList();
   }
 
   @override
@@ -44,8 +49,12 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     required String userId,
     required TaskModel task,
   }) async {
-    await _userTasks(userId).doc(task.id).set(task.toJson());
-    return task;
+    try {
+      await _userTasks(userId).doc(task.id).set(task.toJson());
+      return task;
+    } catch (error) {
+      throw AppErrorHandler.handle(error);
+    }
   }
 
   @override
@@ -53,8 +62,12 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     required String userId,
     required TaskModel task,
   }) async {
-    await _userTasks(userId).doc(task.id).update(task.toJson());
-    return task;
+    try {
+      await _userTasks(userId).doc(task.id).update(task.toJson());
+      return task;
+    } catch (error) {
+      throw AppErrorHandler.handle(error);
+    }
   }
 
   @override
@@ -62,6 +75,10 @@ class TaskRemoteDsImpl implements ITaskRemoteDs {
     required String userId,
     required String taskId,
   }) async {
-    await _userTasks(userId).doc(taskId).delete();
+    try {
+      await _userTasks(userId).doc(taskId).delete();
+    } catch (error) {
+      throw AppErrorHandler.handle(error);
+    }
   }
 }

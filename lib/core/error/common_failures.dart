@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:transient_team_ws/core/error/failure.dart';
 
 /// A stable error category for presentation code to react to.
@@ -168,15 +169,54 @@ final class AppErrorHandler {
 
   static Failure handle(Object error) {
     if (error is Failure) return error;
+
+    // Check for FirebaseException first
+    if (error is FirebaseException) {
+      return fromFirebaseException(error);
+    }
+
+    // Workaround for potential type matching issues in some environments (like tests)
+    final errorStr = error.toString();
+    if (errorStr.contains('FirebaseException')) {
+      try {
+        final dynamic dynError = error;
+        final String code = dynError.code as String;
+        return fromFirebaseCode(code, cause: error);
+      } catch (_) {}
+    }
+
     if (error is DioException) return fromDio(error);
     if (error is SocketException || error is HttpException) {
       return NetworkFailure(cause: error);
     }
     if (error is TimeoutException) return RequestTimeoutFailure(cause: error);
-    if (error is FormatException || error is TypeError) {
+    if (error is FormatException) return ResponseParsingFailure(cause: error);
+    
+    // Check for TypeError specifically to avoid accidental matches
+    if (errorStr.contains('TypeError')) {
       return ResponseParsingFailure(cause: error);
     }
+
     return DefaultFailure(cause: error);
+  }
+
+  static Failure fromFirebaseException(FirebaseException error) {
+    return fromFirebaseCode(error.code, cause: error);
+  }
+
+  static Failure fromFirebaseCode(String code, {Object? cause}) {
+    return switch (code) {
+      'permission-denied' => ForbiddenFailure(cause: cause),
+      'not-found' => NotFoundFailure(cause: cause),
+      'unavailable' => NetworkFailure(cause: cause),
+      'deadline-exceeded' => RequestTimeoutFailure(cause: cause),
+      'already-exists' => ConflictFailure(cause: cause),
+      'unauthenticated' => UnauthorizedFailure(cause: cause),
+      'resource-exhausted' => RateLimitFailure(cause: cause),
+      'cancelled' => RequestCancelledFailure(cause: cause),
+      'internal' || 'data-loss' => ServerFailure(cause: cause),
+      _ => DefaultFailure(cause: cause),
+    };
   }
 
   static Failure fromDio(DioException error) {
