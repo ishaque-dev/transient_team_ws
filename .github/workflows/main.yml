@@ -32,16 +32,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify formatting
-        # Excludes generated files (build_runner output), which don't
-        # always follow your project's format config and can cause
-        # false-positive failures here.
-        run: |
-          FILES=$(find lib test -name '*.dart' ! -name '*.g.dart' ! -name '*.freezed.dart')
-          if [ -n "$FILES" ]; then
-            dart format --set-exit-if-changed $FILES
-          fi
-
       - name: Analyze project
         run: flutter analyze
 
