@@ -36,83 +36,96 @@ class TaskDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Task Details'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<TaskBloc>(),
-                    child: TaskFormPage(task: task),
-                  ),
-                ),
-              );
-            },
+    return BlocBuilder<TaskBloc, TaskState>(
+      builder: (context, state) {
+        // Find the most recent version of this task from the Bloc state
+        final currentTask = state.tasks.firstWhere(
+          (t) => t.id == task.id,
+          orElse: () => task,
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Task Details'),
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<TaskBloc>(),
+                        child: TaskFormPage(task: currentTask),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _confirmDelete(context),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () => _confirmDelete(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildBadge(
-                  task.priority.name.toUpperCase(),
-                  _getPriorityColor(task.priority),
+                Row(
+                  children: [
+                    _buildBadge(
+                      currentTask.priority.name.toUpperCase(),
+                      _getPriorityColor(currentTask.priority),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildBadge(
+                      currentTask.status.name
+                          .replaceAll(RegExp(r'(?=[A-Z])'), ' ')
+                          .toUpperCase(),
+                      _getStatusColor(currentTask.status),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                _buildBadge(
-                  task.status.name
-                      .replaceAll(RegExp(r'(?=[A-Z])'), ' ')
-                      .toUpperCase(),
-                  _getStatusColor(task.status),
+                const SizedBox(height: 24),
+                Text(
+                  currentTask.title,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
                 ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Description',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  currentTask.description,
+                  style: const TextStyle(fontSize: 16, height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 16),
+                _buildDetailRow(
+                    Icons.calendar_today,
+                    'Due Date',
+                    DateFormat('EEEE, MMM dd, yyyy')
+                        .format(currentTask.dueDate)),
+                const SizedBox(height: 12),
+                _buildDetailRow(Icons.person_outline, 'Assigned To',
+                    currentTask.assignedUserId ?? 'Unassigned'),
+                const SizedBox(height: 48),
+                _buildActionButton(context, currentTask),
               ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              task.title,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Description',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              task.description,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-            _buildDetailRow(Icons.calendar_today, 'Due Date',
-                DateFormat('EEEE, MMM dd, yyyy').format(task.dueDate)),
-            const SizedBox(height: 12),
-            _buildDetailRow(Icons.person_outline, 'Assigned To',
-                task.assignedUserId ?? 'Unassigned'),
-            const SizedBox(height: 48),
-            _buildActionButton(context),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -150,19 +163,18 @@ class TaskDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context) {
-    final isCompleted = task.status == TaskStatus.completed;
+  Widget _buildActionButton(BuildContext context, TaskEntity currentTask) {
+    final isCompleted = currentTask.status == TaskStatus.completed;
 
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton.icon(
         onPressed: () {
-          final updatedTask = task.copyWith(
+          final updatedTask = currentTask.copyWith(
             status: isCompleted ? TaskStatus.pending : TaskStatus.completed,
           );
           context.read<TaskBloc>().add(UpdateTaskRequested(updatedTask));
-          Navigator.pop(context);
         },
         icon: Icon(isCompleted ? Icons.replay : Icons.check_circle_outline),
         label: Text(isCompleted ? 'Reopen Task' : 'Mark as Completed'),

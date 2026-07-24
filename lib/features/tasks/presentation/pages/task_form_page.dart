@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:transient_team_ws/core/constants/mock_data.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 import 'package:transient_team_ws/features/tasks/presentation/bloc/task_bloc.dart';
 
@@ -20,6 +21,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
   late DateTime _selectedDate;
   late TaskPriority _selectedPriority;
   late TaskStatus _selectedStatus;
+  String? _selectedAssignee;
 
   bool get _isEditing => widget.task != null;
 
@@ -32,6 +34,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
     _selectedDate = widget.task?.dueDate ?? DateTime.now();
     _selectedPriority = widget.task?.priority ?? TaskPriority.medium;
     _selectedStatus = widget.task?.status ?? TaskStatus.pending;
+    _selectedAssignee = widget.task?.assignedUserId;
   }
 
   @override
@@ -65,7 +68,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
         priority: _selectedPriority,
         dueDate: _selectedDate,
         status: _selectedStatus,
-        assignedUserId: widget.task?.assignedUserId,
+        assignedUserId: _selectedAssignee,
       );
 
       if (_isEditing) {
@@ -127,6 +130,23 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 }).toList(),
                 onChanged: (value) =>
                     setState(() => _selectedPriority = value!),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              const Text('Assign To',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedAssignee,
+                hint: const Text('Select a team member'),
+                items: MockData.teamMembers.map((member) {
+                  return DropdownMenuItem(
+                    value: member,
+                    child: Text(member),
+                  );
+                }).toList(),
+                onChanged: (value) =>
+                    setState(() => _selectedAssignee = value),
                 decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               if (_isEditing) ...[

@@ -1,6 +1,6 @@
-import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
 import 'package:transient_team_ws/features/tasks/domain/use_cases/create_task_use_case.dart';
