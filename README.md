@@ -28,8 +28,14 @@ gets live notifications.
 
 **Everyone**
 - Email/password and Google sign-in.
-- Real-time notifications: a system notification for every new update while the
-  app is open or running in the background, plus a bell with an unread badge. These come from
+- Phone notifications through `flutter_local_notifications`, driven by Firestore (no
+  server needed):
+  - App open or in the background: instant, from the live listener.
+  - App closed (Android): a WorkManager background check about every 15 minutes.
+  - Updates that arrived while the app was closed pop up when it next runs.
+  - Tapping a notification opens the task (or the Team tab for access requests),
+    even from a cold start.
+  - The bell keeps the full history.
   Firestore listeners; no server code is needed.
 - Dark theme by default (light and system available) in Coopiq brand colours.
 
