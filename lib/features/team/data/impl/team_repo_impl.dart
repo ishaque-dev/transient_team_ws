@@ -15,7 +15,10 @@ class TeamRepoImpl implements ITeamRepo {
   Stream<Either<Failure, List<UserEntity>>> watchMembers() {
     return remoteDs
         .watchMembers()
-        .map((models) => models.map((model) => model.toEntity()).toList())
+        .map(
+          (models) =>
+              latestProfilePerEmail(models.map((model) => model.toEntity())),
+        )
         .toEither();
   }
 
@@ -57,4 +60,27 @@ class TeamRepoImpl implements ITeamRepo {
       return Left(AppErrorHandler.handle(error));
     }
   }
+}
+
+/// Firebase Auth allows one account per email, so when several profiles share
+/// an email the older ones belong to accounts that were deleted (for example
+/// from the Firebase console) before the person signed up again. Keep only the
+/// newest profile per email so the team list never shows duplicates.
+List<UserEntity> latestProfilePerEmail(Iterable<UserEntity> members) {
+  final newest = <String, UserEntity>{};
+  for (final member in members) {
+    final key = member.email.trim().toLowerCase();
+    final current = newest[key];
+    final memberTime = member.createdAt ?? DateTime(0);
+    final currentTime = current?.createdAt ?? DateTime(0);
+    if (current == null || memberTime.isAfter(currentTime)) {
+      newest[key] = member;
+    }
+  }
+  final result = newest.values.toList()
+    ..sort(
+      (a, b) =>
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+    );
+  return result;
 }
