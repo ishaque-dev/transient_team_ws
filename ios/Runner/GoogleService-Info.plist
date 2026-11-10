@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>488401848771-n7rdv58rge5c3m4pue7bajluase1h14u.apps.googleusercontent.com</string>
+	<string>301122535476-36kv517cu2bsf3tf0eta0plu86rokds9.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.488401848771-n7rdv58rge5c3m4pue7bajluase1h14u</string>
+	<string>com.googleusercontent.apps.301122535476-36kv517cu2bsf3tf0eta0plu86rokds9</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>301122535476-o4oe4kpqie6gav2p4rn0fthqqqnh52k6.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBQPcnRoQudbzOd2oWn8lZn0dWDc9GvqH0</string>
+	<string>AIzaSyAPp3h7_KNauD5kiekAt0sh1Y7_5cM3_6w</string>
 	<key>GCM_SENDER_ID</key>
-	<string>488401848771</string>
+	<string>301122535476</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.transientTeamWs</string>
 	<key>PROJECT_ID</key>
-	<string>transient-17bb4</string>
+	<string>coopiq-internal</string>
 	<key>STORAGE_BUCKET</key>
-	<string>transient-17bb4.firebasestorage.app</string>
+	<string>coopiq-internal.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:488401848771:ios:8d2457a3025baed9d6d576</string>
+	<string>1:301122535476:ios:5ef9f8efe36126e35b0a61</string>
 </dict>
 </plist>

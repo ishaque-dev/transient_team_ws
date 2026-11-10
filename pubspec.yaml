@@ -1,5 +1,5 @@
 name: transient_team_ws
-description: "A new Flutter project."
+description: "Coopiq Internal - team task management for admins and members."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,7 +34,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  flutter_screenutil: ^5.9.3
   equatable: ^2.1.0
   fpdart: ^1.2.0
   firebase_auth: ^6.5.6
@@ -44,13 +43,15 @@ dependencies:
   get_it: ^9.2.1
   firebase_core: ^4.12.1
   dio: ^5.10.0
-  sqflite: ^2.4.3
-  path: ^1.9.1
   cloud_firestore: ^6.7.1
   uuid: ^4.6.0
   stream_transform: ^2.1.1
   bloc_concurrency: ^0.3.0
   intl: ^0.20.3
+  google_sign_in: ^7.2.0
+  flutter_local_notifications: ^22.3.1
+  url_launcher: ^6.3.3
+  firebase_remote_config: ^6.7.1
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,13 @@ dev_dependencies:
   mocktail: ^1.0.5
   bloc_test: ^10.0.0
   fake_cloud_firestore: ^4.2.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.jpeg"
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,8 +86,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

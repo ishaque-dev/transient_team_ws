@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"transient-17bb4","appId":"1:488401848771:android:f90f67aaf80fc790d6d576","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"transient-17bb4","appId":"1:488401848771:ios:8d2457a3025baed9d6d576","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"transient-17bb4","configurations":{"android":"1:488401848771:android:f90f67aaf80fc790d6d576","ios":"1:488401848771:ios:8d2457a3025baed9d6d576"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "coopiq-internal",
+          "appId": "1:301122535476:android:cb212d7779f79cd55b0a61",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "coopiq-internal",
+          "appId": "1:301122535476:ios:5ef9f8efe36126e35b0a61",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "coopiq-internal",
+          "configurations": {
+            "android": "1:301122535476:android:cb212d7779f79cd55b0a61",
+            "ios": "1:301122535476:ios:5ef9f8efe36126e35b0a61"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "remoteconfig": {
+    "template": "remoteconfig.template.json"
+  }
+}

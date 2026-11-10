@@ -1,0 +1,124 @@
+rules_version = '2';
+
+// Coopiq Internal security model.
+// Data lives under environments/{env} (env = "prod" or "dev").
+//   - The first account in an environment becomes its admin.
+//   - Later self sign-ups start as inactive employees until an admin approves.
+//   - Admins manage the team and all tasks.
+//   - Employees read only tasks assigned to them and may change only the
+//     status of those tasks, plus comment on them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /environments/{env} {
+      function signedIn() {
+        return request.auth != null;
+      }
+      function userPath(uid) {
+        return /databases/$(database)/documents/environments/$(env)/users/$(uid);
+      }
+      function workspacePath() {
+        return /databases/$(database)/documents/environments/$(env)/meta/workspace;
+      }
+      function taskPath(taskId) {
+        return /databases/$(database)/documents/environments/$(env)/tasks/$(taskId);
+      }
+      function me() {
+        return get(userPath(request.auth.uid)).data;
+      }
+      function isActive() {
+        return signedIn() && exists(userPath(request.auth.uid)) && me().isActive == true;
+      }
+      function isAdmin() {
+        return isActive() && me().role == 'admin';
+      }
+      function onlyChanges(keys) {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+      }
+
+      // Subscription: readable before sign-in (the app checks it at start-up);
+      // only the developer changes it, from the Firebase console.
+      match /subscription/{docId} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      match /meta/workspace {
+        allow read: if signedIn();
+        // Created exactly once, in the same batch as the first admin profile.
+        allow create: if signedIn()
+          && !exists(workspacePath())
+          && request.resource.data.createdBy == request.auth.uid
+          && getAfter(userPath(request.auth.uid)).data.role == 'admin';
+        allow update, delete: if false;
+      }
+
+      match /users/{uid} {
+        allow read: if isActive() || (signedIn() && request.auth.uid == uid);
+
+        allow create: if signedIn() && request.resource.data.id == uid && (
+          // Self sign-up: an inactive employee waiting for approval.
+          (request.auth.uid == uid
+            && request.resource.data.role == 'employee'
+            && request.resource.data.isActive == false)
+          // The very first account bootstraps the workspace as admin.
+          || (request.auth.uid == uid
+            && request.resource.data.role == 'admin'
+            && request.resource.data.isActive == true
+            && !exists(workspacePath())
+            && existsAfter(workspacePath()))
+          // An admin adding a teammate.
+          || isAdmin()
+        );
+
+        allow update: if
+          // Admins manage other people's role and access (never their own,
+          // so the workspace always keeps an admin).
+          (isAdmin() && request.auth.uid != uid
+            && onlyChanges(['role', 'isActive', 'name', 'updatedAt']))
+          // Everyone may edit their own display details.
+          || (request.auth.uid == uid && isActive()
+            && onlyChanges(['name', 'photoUrl', 'notificationsSeenAt', 'updatedAt']));
+
+        allow delete: if false;
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isAdmin()
+          || (isActive() && resource.data.assigneeId == request.auth.uid);
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin()
+          || (isActive()
+            && resource.data.assigneeId == request.auth.uid
+            && onlyChanges(['status', 'updatedAt', 'completedAt'])
+            && request.resource.data.status in ['todo', 'inProgress', 'onHold', 'completed']);
+
+        match /activity/{activityId} {
+          allow read: if isAdmin()
+            || (isActive() && get(taskPath(taskId)).data.assigneeId == request.auth.uid);
+          allow create: if isActive()
+            && request.resource.data.authorId == request.auth.uid
+            && (isAdmin() || get(taskPath(taskId)).data.assigneeId == request.auth.uid);
+          allow delete: if isAdmin();
+          allow update: if false;
+        }
+      }
+
+      match /notifications/{notificationId} {
+        // Admins may read every notification; employees only their own.
+        allow read: if isAdmin()
+          || (isActive() && resource.data.recipient == request.auth.uid);
+        // Employees can only notify the admins; admins can notify anyone.
+        allow create: if (isActive()
+            && request.resource.data.actorId == request.auth.uid
+            && (isAdmin() || request.resource.data.recipient == 'admins'))
+          // A new, not-yet-approved sign-up announcing its own access request.
+          || (signedIn()
+            && request.resource.data.actorId == request.auth.uid
+            && request.resource.data.recipient == 'admins'
+            && request.resource.data.type == 'accessRequested'
+            && getAfter(userPath(request.auth.uid)).data.isActive == false);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

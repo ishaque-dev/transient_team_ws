@@ -1,112 +1,109 @@
-# 🚀 Team Workspace: Enterprise Task Management
+# Coopiq Internal
 
-[![Flutter](https://img.shields.io/badge/Flutter-v3.24+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-green)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-[![Tests](https://img.shields.io/badge/Tests-63%20Passed-brightgreen)](test/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+Team task management for Coopiq. Admins (owners) assign and review work.
+Employees see their daily list, update progress and mark tasks complete. Everyone
+gets live notifications.
 
-A production-grade Workspace application demonstrating **Architectural Rigor**, **High-Performance Persistence**, and **Multi-Environment Deployment** strategies. Built to exceed standard machine test expectations.
+## Features
 
----
+**Admin / owner**
+- Dashboard: open, overdue and completed tasks, deadline achievement, average rating,
+  status breakdown, weekly completion chart, employee leaderboard, "needs attention"
+  list and recent updates.
+- Tasks: create, edit, reassign and delete tasks. Search and filter by status,
+  priority and assignee; sort by due date, priority or recency.
+- Ratings: rate each completed task on **completion quality** and **deadline
+  achievement** (1–5 stars each), with optional feedback. The deadline score is
+  pre-filled from how late the task was finished.
+- Team: approve sign-up requests, add members directly, promote or demote admins,
+  deactivate accounts, and open any employee's performance page.
 
-## 🏛️ Architectural Rigor: Clean Architecture (Feature-First)
+**Employee**
+- My day: a date strip with tasks due on the chosen day, overdue carry-over, and
+  one-tap complete (with undo).
+- My tasks: every assigned task, including completed ones, with filters.
+- Performance: score, deadline achievement, average ratings, weekly trend and the
+  feedback received.
+- Comments and status changes on assigned tasks.
 
-This project strictly adheres to **Clean Architecture** principles, ensuring that business logic is isolated, highly testable, and independent of external frameworks.
+**Everyone**
+- Email/password and Google sign-in.
+- Real-time notifications: a system notification for every new update while the
+  app is open or running in the background, plus a bell with an unread badge. These come from
+  Firestore listeners; no server code is needed.
+- Dark theme by default (light and system available) in Coopiq brand colours.
 
-```mermaid
-graph TD
-    UI[Presentation: Bloc & Widgets] --> UC[Domain: Use Cases]
-    UC --> E[Domain: Entities]
-    R[Data: Repository Implementation] --> UC
-    R --> M[Data: Mappers]
-    R --> DS[Data: Remote & Local Sources]
+## How access works
+
+1. The **first account** created becomes the admin (already done: Wasil and Ishaque are admins).
+2. Later self sign-ups (email or Google) are created **inactive** and need an
+   admin to approve them on the Team tab.
+3. Admins can also add members directly with a temporary password, optionally
+   emailing them a password-setup link.
+
+`firestore.rules` enforces this model on the server: employees can only read their
+own tasks and can only change a task's status.
+
+## Performance score
+
+0–100, combining deadline achievement (40%), admin ratings (40%) and completion
+rate (20%). Missing parts are left out and the weights rescaled. Deadline achievement
+= tasks finished on time ÷ (completed + overdue).
+
+## Data model (Firestore)
+
+```
+environments/prod/meta/workspace
+environments/prod/users/{uid}
+environments/prod/tasks/{taskId}
+environments/prod/tasks/{taskId}/activity/{id}
+environments/prod/notifications/{id}
 ```
 
-### 🔹 Domain Layer (Business Truth)
-- **Entities**: Pure Dart objects (`TaskEntity`, `UserEntity`) with zero external dependencies.
-- **Use Cases**: Atomic, single-responsibility logic units. 
-  - *Sophistication*: **Client-Side UUID v4 Generation** ensures data integrity before persistence.
-- **Contracts**: Interface-driven design allowing seamless infrastructure swaps.
+Every task change is written in one batch together with its activity entries and
+notifications. Firestore's offline cache serves reads and queues writes while the
+device is offline.
 
-### 🔹 Data Layer (The Infrastructure)
-- **Hybrid Repository**: Implements a sophisticated **"Fetch-and-Cache"** strategy.
-- **Mappers**: Decouples DB/API primitives from Domain logic, preventing "primitive obsession" leakage.
-- **Firestore Remote**: User-nested hierarchical pathing (`users/{uid}/tasks/{id}`).
-- **SQLite Local**: Advanced local persistence with manual **SQL Indexing**.
+## Setup
 
-### 🔹 Presentation Layer (The Reactive UI)
-- **State Management**: Scalable `flutter_bloc`.
-- **Event Transformers**: Uses `throttleDroppable` logic to optimize infinite scrolling and high-frequency search inputs.
+1. **Deploy rules and indexes** (required before first use):
+   ```bash
+   firebase deploy --only firestore
+   ```
+2. **Enable sign-in providers** in Firebase Console → Authentication: Email/Password
+   and Google.
+3. **Android Google sign-in:** add your SHA-1 (and SHA-256) fingerprints in Firebase
+   Console → Project settings → Android app, then download the new
+   `google-services.json` into `android/app/`. Get the debug fingerprint with:
+   ```bash
+   keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
+   ```
+4. Run:
+   ```bash
+   flutter run
+   ```
 
----
+## Architecture
 
-## 💾 Sophisticated Persistence: "Hybrid Source of Truth"
+Feature-first clean architecture: `domain` (entities, use cases), `data`
+(Firestore models and data sources, repositories) and `presentation` (BLoC/Cubit,
+pages). Dependency injection uses `get_it`, and errors are typed `Failure`s returned
+through `fpdart`'s `Either`.
 
-Unlike basic implementations, this app treats **Cloud Firestore as the truth but SQLite as the accelerator.**
-
-| Feature | Technical Implementation | Impact |
-| :--- | :--- | :--- |
-| **Search/Filter** | Local Indexed SQL Queries | Sub-millisecond filtering across thousands of tasks. |
-| **Offline Mode** | Automatic Repository Fallback | Seamless UX even during total network loss. |
-| **Sync Strategy** | Remote-First with Local Mirror | Zero-latency UI updates while maintaining cloud sync. |
-| **Data Isolation** | Flavor-driven Collection Names | `users` vs `users_test` ensures production data safety. |
-
----
-
-## 🚀 Advanced Technical Highlights
-
-### 🌍 Multi-Environment (Flavors)
-The project demonstrates professional DevOps readiness with a **Config-Injected DI System**:
-- **`main_dev.dart`**: Targets the `users_test` collection for safe integration testing.
-- **`main_prod.dart`**: High-security production environment.
-
-### 🆔 Conflict-Free Distributed IDs
-By generating **UUIDs** at the Use Case level, we eliminate the common "ID Mapping" headache. A task created offline has the **same unique ID** in the UI, the local DB, and the cloud from millisecond zero.
-
-### 🔄 Reactive Shell Pattern
-The entire navigation flow is state-driven. The app automatically transitions between `AuthPage` and `Dashboard` based on the `AuthBloc` stream, fulfilling the **Persistent Session** requirement without manual logic.
-
----
-
-## 🧪 Quality Assurance
-
-Code without tests is just a "hope." This project is verified by **63 comprehensive unit tests** covering 100% of the core logic.
-
-- **Bloc Coverage**: Every state transition (Auth & Tasks).
-- **Domain Coverage**: Use Case orchestration and UUID generation logic.
-- **Data Coverage**: SQL query building and JSON mapping integrity.
-
----
-
-## 🛠️ Tech Stack & Patterns
-
-- **Core**: Flutter (Latest Stable), Dart (Null Safety)
-- **State**: `flutter_bloc`, `bloc_concurrency`
-- **Infrastructure**: `cloud_firestore`, `sqflite`, `firebase_auth`, `shared_preferences`
-- **DI**: `get_it` (Service Locator)
-- **Functional**: `fpdart` (Functional Error Handling with `Either`)
-- **Testing**: `mocktail`, `bloc_test`
-
----
-
-## 🏃‍♂️ Getting Started
-
-### 📦 Prerequisites
-- Flutter SDK
-- Firebase Project setup (`GoogleService-Info.plist` / `google-services.json`)
-
-### 🚀 Running Flavors
-**Development Environment:**
-```bash
-flutter run -t lib/main_dev.dart
+```
+lib/
+  core/        config, DI, theme, Firestore paths, shared widgets, notifications
+  features/
+    auth/          sign-in, Google, approval flow, live profile
+    tasks/         task list, My day, details, form, ratings, activity
+    team/          members, approvals, roles
+    analytics/     dashboard, employee performance
+    notifications/ feed, unread state, system alerts
+    profile/       account and appearance
+    home/          role-based navigation shell
 ```
 
-**Production Environment:**
 ```bash
-flutter run -t lib/main_prod.dart
-```
-
-### 🧪 Run Test Suite
-```bash
+flutter analyze
 flutter test
 ```

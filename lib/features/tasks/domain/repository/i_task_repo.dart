@@ -1,26 +1,50 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:transient_team_ws/core/error/failure.dart';
+import 'package:transient_team_ws/features/notifications/domain/entities/app_notification_entity.dart';
+import 'package:transient_team_ws/features/tasks/domain/entities/task_activity_entity.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
+import 'package:transient_team_ws/features/tasks/domain/entities/task_filter.dart';
 
+/// Every write is atomic with its activity entries and notifications.
 abstract interface class ITaskRepo {
-  /// Retrieves a paginated list of tasks.
-  Future<Either<Failure, List<TaskEntity>>> getTasks({
-    int offset = 0,
-    int limit = 10,
-    String? query,
-    TaskStatus? status,
-    TaskPriority? priority,
+  Stream<Either<Failure, List<TaskEntity>>> watchTasks(TaskScope scope);
+
+  Stream<Either<Failure, List<TaskActivityEntity>>> watchActivity(
+    String taskId,
+  );
+
+  Future<Either<Failure, Unit>> createTask(
+    TaskEntity task, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
   });
 
-  /// Retrieves a specific task by its [id].
-  Future<Either<Failure, TaskEntity>> getTaskById({required String id});
+  Future<Either<Failure, Unit>> updateTask(
+    TaskEntity task, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  });
 
-  /// Creates a new task and returns the created [TaskEntity].
-  Future<Either<Failure, TaskEntity>> createTask({required TaskEntity task});
+  /// Touches only the status fields, which is all an employee may change.
+  Future<Either<Failure, Unit>> updateStatus(
+    String taskId,
+    TaskStatus status, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  });
 
-  /// Updates an existing task.
-  Future<Either<Failure, TaskEntity>> updateTask({required TaskEntity task});
+  Future<Either<Failure, Unit>> rateTask(
+    String taskId,
+    TaskRating rating, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  });
 
-  /// Deletes a task by its [id].
-  Future<Either<Failure, Unit>> deleteTask({required String id});
+  Future<Either<Failure, Unit>> addComment(
+    String taskId, {
+    required TaskActivityEntity comment,
+    required List<AppNotificationEntity> notifications,
+  });
+
+  Future<Either<Failure, Unit>> deleteTask(String taskId);
 }

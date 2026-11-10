@@ -22,6 +22,7 @@ enum FailureType {
   cacheWrite,
   responseParsing,
   authentication,
+  accountInactive,
 }
 
 /// Base failure used across all features.
@@ -162,6 +163,15 @@ final class AuthenticationFailure extends AppFailure {
       );
 }
 
+/// The account exists but is waiting for approval or was deactivated.
+final class AccountInactiveFailure extends AppFailure {
+  AccountInactiveFailure({super.cause, String? message})
+    : super(
+        type: FailureType.accountInactive,
+        message: message ?? AppErrorMessages.accountInactive,
+      );
+}
+
 /// The single entry point for translating third-party and platform errors to
 /// failures the rest of the app can safely consume.
 final class AppErrorHandler {
@@ -191,7 +201,7 @@ final class AppErrorHandler {
     }
     if (error is TimeoutException) return RequestTimeoutFailure(cause: error);
     if (error is FormatException) return ResponseParsingFailure(cause: error);
-    
+
     // Check for TypeError specifically to avoid accidental matches
     if (errorStr.contains('TypeError')) {
       return ResponseParsingFailure(cause: error);
@@ -313,4 +323,8 @@ abstract final class AppErrorMessages {
   static const cacheWrite = 'Unable to save your changes locally.';
   static const responseParsing = 'The received data could not be read.';
   static const authentication = 'Authentication failed. Please try again.';
+  static const accessRequested =
+      'Request sent. You can sign in once an admin approves your account.';
+  static const accountInactive =
+      'Your account is not active yet. Ask a workspace admin to approve it.';
 }

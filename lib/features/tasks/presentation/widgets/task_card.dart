@@ -1,155 +1,178 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:transient_team_ws/core/constants/app_strings.dart';
+import 'package:transient_team_ws/core/widgets/user_avatar.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
-import 'package:transient_team_ws/features/tasks/presentation/bloc/task_bloc.dart';
+import 'package:transient_team_ws/features/tasks/presentation/widgets/star_rating.dart';
+import 'package:transient_team_ws/features/tasks/presentation/widgets/task_visuals.dart';
 
 class TaskCard extends StatelessWidget {
+  const TaskCard({
+    super.key,
+    required this.task,
+    this.onTap,
+    this.onToggleComplete,
+    this.showAssignee = false,
+  });
+
   final TaskEntity task;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
-  const TaskCard({super.key, required this.task, required this.onTap});
-
-  Color _getPriorityColor() {
-    switch (task.priority) {
-      case TaskPriority.high:
-        return Colors.redAccent;
-      case TaskPriority.medium:
-        return Colors.orangeAccent;
-      case TaskPriority.low:
-        return Colors.green;
-    }
-  }
-
-  Color _getStatusColor() {
-    switch (task.status) {
-      case TaskStatus.completed:
-        return Colors.blue;
-      case TaskStatus.inProgress:
-        return Colors.orange;
-      case TaskStatus.pending:
-        return Colors.grey;
-    }
-  }
-
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<TaskBloc>().add(DeleteTaskRequested(task.id));
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
+  /// When set, a round check button completes / reopens the task in one tap.
+  final VoidCallback? onToggleComplete;
+  final bool showAssignee;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final done = task.isCompleted;
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (onToggleComplete != null) ...[
+                    _CompleteButton(done: done, onPressed: onToggleComplete!),
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
-                    child: Text(
-                      task.title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          task.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            decoration: done
+                                ? TextDecoration.lineThrough
+                                : null,
+                            color: done ? scheme.onSurfaceVariant : null,
+                          ),
+                        ),
+                        if (task.description.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            task.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            StatusPill(task.status, dense: true),
+                            PriorityPill(task.priority, dense: true),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Flexible(child: DueLabel(task)),
+                            const Spacer(),
+                            if (task.rating != null) ...[
+                              StarRating(value: task.rating!.overall, size: 14),
+                              const SizedBox(width: 8),
+                            ],
+                            if (showAssignee) _Assignee(task: task),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: Colors.redAccent),
-                    onPressed: () => _confirmDelete(context),
-                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                task.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.person_outline, size: 16, color: Colors.grey[700]),
-                  const SizedBox(width: 4),
-                  Text(
-                    task.assignedUserId ?? 'Unassigned',
-                    style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateFormat('MMM dd, yyyy').format(task.dueDate),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildChip(
-                    task.priority.name.toUpperCase(),
-                    _getPriorityColor(),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildChip(
-                    task.status.name
-                        .replaceAll(RegExp(r'(?=[A-Z])'), ' ')
-                        .toUpperCase(),
-                    _getStatusColor(),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(width: 5, color: task.priority.color(context)),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildChip(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withAlpha(40),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
+class _Assignee extends StatelessWidget {
+  const _Assignee({required this.task});
+
+  final TaskEntity task;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = task.assigneeName;
+    final theme = Theme.of(context);
+    if (name == null) {
+      return Text(
+        AppStrings.unassigned,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        UserAvatar(name: name, size: 22),
+        const SizedBox(width: 6),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 110),
+          child: Text(
+            name.split(' ').first,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelMedium,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompleteButton extends StatelessWidget {
+  const _CompleteButton({required this.done, required this.onPressed});
+
+  final bool done;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = TaskStatus.completed.color(context);
+    final outline = Theme.of(context).colorScheme.outline;
+    return Semantics(
+      button: true,
+      label: done ? 'Reopen task' : 'Mark as completed',
+      child: InkResponse(
+        onTap: onPressed,
+        radius: 24,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: done ? color : Colors.transparent,
+            border: Border.all(color: done ? color : outline, width: 2),
+          ),
+          child: done
+              ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
+              : null,
         ),
       ),
     );

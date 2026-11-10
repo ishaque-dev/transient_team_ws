@@ -1,0 +1,193 @@
+{
+  "parameterGroups": {
+    "App access": {
+      "parameters": {
+        "app_enabled": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Master switch. false shows the \"unavailable\" screen to everyone.",
+          "valueType": "BOOLEAN"
+        },
+        "app_blocked_title": {
+          "defaultValue": {
+            "value": "Coopiq Internal is unavailable"
+          },
+          "description": "Title on the screen shown when app_enabled is false.",
+          "valueType": "STRING"
+        },
+        "app_blocked_message": {
+          "defaultValue": {
+            "value": "The app is turned off for now. Contact us to get it back on."
+          },
+          "description": "Message shown when app_enabled is false.",
+          "valueType": "STRING"
+        },
+        "subscription_expired_message": {
+          "defaultValue": {
+            "value": "Your subscription has ended. Contact us to renew and keep your team going."
+          },
+          "description": "Message shown when the subscription is expired or suspended.",
+          "valueType": "STRING"
+        }
+      }
+    },
+    "Contact details": {
+      "parameters": {
+        "contact_phone": {
+          "defaultValue": {
+            "value": "+919747344535"
+          },
+          "description": "Phone number for Call and WhatsApp buttons (with country code).",
+          "valueType": "STRING"
+        },
+        "contact_email": {
+          "defaultValue": {
+            "value": "ishaque.kannoth.dev@gmail.com"
+          },
+          "description": "Email for the Email button.",
+          "valueType": "STRING"
+        }
+      }
+    },
+    "Sign-in screen": {
+      "parameters": {
+        "feature_google_sign_in": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Show \"Continue with Google\" on the sign-in screen.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_request_access": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Allow new people to request access (self sign-up).",
+          "valueType": "BOOLEAN"
+        },
+        "feature_forgot_password": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Show \"Forgot password?\" on the sign-in screen.",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "Tasks": {
+      "parameters": {
+        "feature_create_task": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can create new tasks.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_edit_task": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can edit tasks.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_delete_task": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can delete tasks.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_status_update": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Status changes and one-tap complete.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_task_comments": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Comment box on task details.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_task_rating": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can rate completed work.",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "Team": {
+      "parameters": {
+        "feature_add_member": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can add employees directly.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_member_management": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Admins can approve and deactivate employees.",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "Insights & notifications": {
+      "parameters": {
+        "feature_notifications": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Notification bell and phone notifications.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_performance_insights": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Performance scores, charts and leaderboard.",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "Profile": {
+      "parameters": {
+        "feature_contact_developer": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Contact developer row on Profile.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_theme_switch": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Theme picker on Profile.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_edit_name": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Users can edit their display name.",
+          "valueType": "BOOLEAN"
+        },
+        "feature_change_password": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "Change password (reset email) on Profile.",
+          "valueType": "BOOLEAN"
+        }
+      }
+    }
+  }
+}

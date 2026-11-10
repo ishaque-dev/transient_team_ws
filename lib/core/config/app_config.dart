@@ -1,18 +1,8 @@
-enum AppEnvironment { dev, prod }
-
 class AppConfig {
+  const AppConfig({required this.appTitle});
+
   final String appTitle;
-  final AppEnvironment environment;
-  final String apiBaseUrl;
-  final String userCollection;
 
-  const AppConfig({
-    required this.appTitle,
-    required this.environment,
-    required this.apiBaseUrl,
-    required this.userCollection,
-  });
-
-  bool get isDev => environment == AppEnvironment.dev;
-  bool get isProd => environment == AppEnvironment.prod;
+  /// Firestore root for all app data: `environments/prod/...`.
+  String get dataNamespace => 'prod';
 }

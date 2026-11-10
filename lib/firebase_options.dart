@@ -50,20 +50,22 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCeqfX2u2IkG-VZzWnXhSypcKZPSA6OSfo',
-    appId: '1:488401848771:android:f90f67aaf80fc790d6d576',
-    messagingSenderId: '488401848771',
-    projectId: 'transient-17bb4',
-    storageBucket: 'transient-17bb4.firebasestorage.app',
+    apiKey: 'AIzaSyDf109WGCdIrMr6mFyujvkEHk2haC7Etwc',
+    appId: '1:301122535476:android:cb212d7779f79cd55b0a61',
+    messagingSenderId: '301122535476',
+    projectId: 'coopiq-internal',
+    storageBucket: 'coopiq-internal.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBQPcnRoQudbzOd2oWn8lZn0dWDc9GvqH0',
-    appId: '1:488401848771:ios:8d2457a3025baed9d6d576',
-    messagingSenderId: '488401848771',
-    projectId: 'transient-17bb4',
-    storageBucket: 'transient-17bb4.firebasestorage.app',
-    iosClientId: '488401848771-n7rdv58rge5c3m4pue7bajluase1h14u.apps.googleusercontent.com',
+    apiKey: 'AIzaSyAPp3h7_KNauD5kiekAt0sh1Y7_5cM3_6w',
+    appId: '1:301122535476:ios:5ef9f8efe36126e35b0a61',
+    messagingSenderId: '301122535476',
+    projectId: 'coopiq-internal',
+    storageBucket: 'coopiq-internal.firebasestorage.app',
+    androidClientId:
+        '301122535476-o4oe4kpqie6gav2p4rn0fthqqqnh52k6.apps.googleusercontent.com',
+    iosClientId:
+        '301122535476-36kv517cu2bsf3tf0eta0plu86rokds9.apps.googleusercontent.com',
     iosBundleId: 'com.example.transientTeamWs',
   );
 }

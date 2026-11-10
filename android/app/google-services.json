@@ -1,37 +1,45 @@
 {
   "project_info": {
-    "project_number": "488401848771",
-    "project_id": "transient-17bb4",
-    "storage_bucket": "transient-17bb4.firebasestorage.app"
+    "project_number": "301122535476",
+    "project_id": "coopiq-internal",
+    "storage_bucket": "coopiq-internal.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:488401848771:android:f90f67aaf80fc790d6d576",
+        "mobilesdk_app_id": "1:301122535476:android:cb212d7779f79cd55b0a61",
         "android_client_info": {
           "package_name": "com.example.transient_team_ws"
         }
       },
       "oauth_client": [
         {
-          "client_id": "488401848771-324rjhfdd5tb86oq9shei2lc50384139.apps.googleusercontent.com",
+          "client_id": "301122535476-o4oe4kpqie6gav2p4rn0fthqqqnh52k6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.transient_team_ws",
+            "certificate_hash": "0c722c31d3b544dc0f92288a28df999bcba8a10d"
+          }
+        },
+        {
+          "client_id": "301122535476-rod9hki9u39sjfto1lf1ni45e7omcp4g.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCeqfX2u2IkG-VZzWnXhSypcKZPSA6OSfo"
+          "current_key": "AIzaSyDf109WGCdIrMr6mFyujvkEHk2haC7Etwc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "488401848771-324rjhfdd5tb86oq9shei2lc50384139.apps.googleusercontent.com",
+              "client_id": "301122535476-rod9hki9u39sjfto1lf1ni45e7omcp4g.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "488401848771-n7rdv58rge5c3m4pue7bajluase1h14u.apps.googleusercontent.com",
+              "client_id": "301122535476-36kv517cu2bsf3tf0eta0plu86rokds9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.example.transientTeamWs"

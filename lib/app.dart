@@ -1,54 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:transient_team_ws/core/config/app_config.dart';
 import 'package:transient_team_ws/core/di/di.dart';
+import 'package:transient_team_ws/core/router/app_router.dart';
+import 'package:transient_team_ws/core/theme/app_theme.dart';
+import 'package:transient_team_ws/core/theme/theme_cubit.dart';
+import 'package:transient_team_ws/features/app_control/presentation/app_control_cubit.dart';
 import 'package:transient_team_ws/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:transient_team_ws/features/auth/presentation/pages/auth_page.dart';
-import 'package:transient_team_ws/features/tasks/presentation/pages/dashboard_page.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// iOS-style bounce on every scrollable, on every platform.
+class _BouncingScrollBehavior extends MaterialScrollBehavior {
+  const _BouncingScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
+}
+
+class CoopiqApp extends StatefulWidget {
+  const CoopiqApp({super.key});
+
+  @override
+  State<CoopiqApp> createState() => _CoopiqAppState();
+}
+
+class _CoopiqAppState extends State<CoopiqApp> {
+  late final AuthBloc _auth = serviceLocator<AuthBloc>()
+    ..add(AuthCheckStatus());
+  late final AppControlCubit _control = serviceLocator<AppControlCubit>();
+  late final GoRouter _router = createAppRouter(auth: _auth, control: _control);
+
+  @override
+  void dispose() {
+    _router.dispose();
+    _auth.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final config = serviceLocator<AppConfig>();
-
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => serviceLocator<AuthBloc>()..add(AuthCheckStatus()),
-        ),
+        BlocProvider.value(value: _auth),
+        BlocProvider.value(value: _control),
+        BlocProvider.value(value: serviceLocator<ThemeCubit>()),
       ],
-      child: MaterialApp(
-        title: config.appTitle,
-        debugShowCheckedModeBanner: config.isDev,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) => MaterialApp.router(
+          title: config.appTitle,
+          debugShowCheckedModeBanner: false,
+          scrollBehavior: const _BouncingScrollBehavior(),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: themeMode,
+          routerConfig: _router,
         ),
-        home: const AuthWrapper(),
       ),
-    );
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      buildWhen: (previous, current) {
-        // Only rebuild the whole screen when moving between major states.
-        if (current is AuthInitial || current is AuthLoading) return false;
-        return true;
-      },
-      builder: (context, state) {
-        if (state is Authenticated) {
-          return const DashboardPage();
-        }
-        return const AuthPage();
-      },
     );
   }
 }

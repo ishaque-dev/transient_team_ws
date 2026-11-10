@@ -1,143 +1,95 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:transient_team_ws/core/error/common_failures.dart';
 import 'package:transient_team_ws/core/error/failure.dart';
-import 'package:transient_team_ws/features/auth/data/data_sources/i_auth_local_ds.dart';
-import 'package:transient_team_ws/features/tasks/data/data_sources/i_task_local_ds.dart';
+import 'package:transient_team_ws/core/utils/either_stream.dart';
+import 'package:transient_team_ws/features/notifications/domain/entities/app_notification_entity.dart';
 import 'package:transient_team_ws/features/tasks/data/data_sources/i_task_remote_ds.dart';
-import 'package:transient_team_ws/features/tasks/data/models/task_model.dart';
+import 'package:transient_team_ws/features/tasks/domain/entities/task_activity_entity.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
+import 'package:transient_team_ws/features/tasks/domain/entities/task_filter.dart';
 import 'package:transient_team_ws/features/tasks/domain/repository/i_task_repo.dart';
 
+/// Firestore is the source of truth. Its built-in offline cache serves reads
+/// and queues writes while the device is offline.
 class TaskRepoImpl implements ITaskRepo {
-  final ITaskRemoteDs _remoteDs;
-  final ITaskLocalDs _localDs;
-  final IAuthLocalDs _authLocalDs;
+  TaskRepoImpl({required this.remoteDs});
 
-  TaskRepoImpl({
-    required this._remoteDs,
-    required this._localDs,
-    required this._authLocalDs,
-  });
+  final ITaskRemoteDs remoteDs;
 
-  Future<String> _getUserId() async {
-    final user = await _authLocalDs.getCurrentUser();
-    if (user == null) {
-      throw UnauthorizedFailure(message: 'User not logged in');
-    }
-    return user.id;
+  @override
+  Stream<Either<Failure, List<TaskEntity>>> watchTasks(TaskScope scope) {
+    return remoteDs.watchTasks(assigneeId: scope.assigneeId).toEither();
   }
 
   @override
-  Future<Either<Failure, List<TaskEntity>>> getTasks({
-    int offset = 0,
-    int limit = 10,
-    String? query,
-    TaskStatus? status,
-    TaskPriority? priority,
-  }) async {
-    try {
-      final userId = await _getUserId();
-
-      // 1. Fetch from remote (Source of Truth)
-      final remoteTasks = await _remoteDs.getTasks(
-        userId: userId,
-        offset: offset,
-        limit: limit,
-        query: query,
-        status: status?.name,
-        priority: priority?.name,
-      );
-
-      // 2. Cache the fetched tasks locally
-      if (remoteTasks.isNotEmpty) {
-        await _localDs.cacheTasks(remoteTasks);
-      }
-
-      // 3. Perform filtering and sorting always locally from the indexed DB
-      final localTasks = await _localDs.getTasks(
-        offset: offset,
-        limit: limit,
-        query: query,
-        status: status?.name,
-        priority: priority?.name,
-      );
-
-      return Right(localTasks.map((e) => e.toEntity()).toList());
-    } catch (error) {
-      // 4. On network failure, fall back to local database
-      try {
-        final localTasks = await _localDs.getTasks(
-          offset: offset,
-          limit: limit,
-          query: query,
-          status: status?.name,
-          priority: priority?.name,
-        );
-        return Right(localTasks.map((e) => e.toEntity()).toList());
-      } catch (e) {
-        return Left(AppErrorHandler.handle(e));
-      }
-    }
+  Stream<Either<Failure, List<TaskActivityEntity>>> watchActivity(
+    String taskId,
+  ) {
+    return remoteDs.watchActivity(taskId).toEither();
   }
 
   @override
-  Future<Either<Failure, TaskEntity>> getTaskById({required String id}) async {
-    try {
-      final localTask = await _localDs.getTaskById(id);
-      if (localTask != null) {
-        return Right(localTask.toEntity());
-      }
-      return Left(NotFoundFailure());
-    } catch (e) {
-      return Left(AppErrorHandler.handle(e));
-    }
+  Future<Either<Failure, Unit>> createTask(
+    TaskEntity task, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  }) {
+    return _run(() => remoteDs.createTask(task, activities, notifications));
   }
 
   @override
-  Future<Either<Failure, TaskEntity>> createTask({required TaskEntity task}) async {
-    try {
-      final userId = await _getUserId();
-      final taskModel = TaskModel.fromEntity(task);
-      
-      // 1. Sync to remote (Source of Truth)
-      await _remoteDs.createTask(userId: userId, task: taskModel);
-      
-      // 2. Insert into local
-      await _localDs.insertTask(taskModel);
-      
-      return Right(task);
-    } catch (e) {
-      return Left(AppErrorHandler.handle(e));
-    }
+  Future<Either<Failure, Unit>> updateTask(
+    TaskEntity task, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  }) {
+    return _run(() => remoteDs.updateTask(task, activities, notifications));
   }
 
   @override
-  Future<Either<Failure, TaskEntity>> updateTask({required TaskEntity task}) async {
-    try {
-      final userId = await _getUserId();
-      final taskModel = TaskModel.fromEntity(task);
-      
-      // 1. Update remote
-      await _remoteDs.updateTask(userId: userId, task: taskModel);
-      
-      // 2. Update local
-      await _localDs.updateTask(taskModel);
-      
-      return Right(task);
-    } catch (e) {
-      return Left(AppErrorHandler.handle(e));
-    }
+  Future<Either<Failure, Unit>> updateStatus(
+    String taskId,
+    TaskStatus status, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  }) {
+    return _run(
+      () => remoteDs.updateStatus(taskId, status, activities, notifications),
+    );
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteTask({required String id}) async {
+  Future<Either<Failure, Unit>> rateTask(
+    String taskId,
+    TaskRating rating, {
+    required List<TaskActivityEntity> activities,
+    required List<AppNotificationEntity> notifications,
+  }) {
+    return _run(
+      () => remoteDs.rateTask(taskId, rating, activities, notifications),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Unit>> addComment(
+    String taskId, {
+    required TaskActivityEntity comment,
+    required List<AppNotificationEntity> notifications,
+  }) {
+    return _run(() => remoteDs.addActivity(taskId, [comment], notifications));
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteTask(String taskId) {
+    return _run(() => remoteDs.deleteTask(taskId));
+  }
+
+  Future<Either<Failure, Unit>> _run(Future<void> Function() call) async {
     try {
-      final userId = await _getUserId();
-      await _remoteDs.deleteTask(userId: userId, taskId: id);
-      await _localDs.deleteTask(id);
+      await call();
       return const Right(unit);
-    } catch (e) {
-      return Left(AppErrorHandler.handle(e));
+    } catch (error) {
+      return Left(AppErrorHandler.handle(error));
     }
   }
 }
