@@ -7,7 +7,9 @@ import 'package:transient_team_ws/core/widgets/feedback_views.dart';
 import 'package:transient_team_ws/core/widgets/user_avatar.dart';
 import 'package:transient_team_ws/features/auth/domain/entities/user_entity.dart';
 import 'package:transient_team_ws/features/tasks/domain/entities/task_entity.dart';
+import 'package:transient_team_ws/features/tasks/presentation/bloc/task_list_bloc.dart';
 import 'package:transient_team_ws/features/tasks/presentation/cubit/task_actions_cubit.dart';
+import 'package:transient_team_ws/features/tasks/presentation/widgets/assignee_picker.dart';
 import 'package:transient_team_ws/features/tasks/presentation/widgets/task_visuals.dart';
 import 'package:transient_team_ws/features/team/presentation/cubit/team_cubit.dart';
 
@@ -80,6 +82,24 @@ class _TaskFormPageState extends State<TaskFormPage> {
       lastDate: DateTime(today.year + 3, 12, 31),
     );
     if (picked != null) _update(() => _dueDate = dateOnly(picked));
+  }
+
+  Future<void> _pickAssignee(List<UserEntity> assignable) async {
+    final tasks = context.read<TaskListBloc>().state.tasks;
+    final openCounts = <String, int>{};
+    for (final task in tasks) {
+      final id = task.assigneeId;
+      if (id != null && task.status.isOpen) {
+        openCounts[id] = (openCounts[id] ?? 0) + 1;
+      }
+    }
+    final choice = await showAssigneePicker(
+      context,
+      members: assignable,
+      selectedId: _assigneeId,
+      openTaskCounts: openCounts,
+    );
+    if (choice != null) _update(() => _assigneeId = choice.userId);
   }
 
   Future<void> _save(List<UserEntity> assignable) async {
@@ -189,47 +209,28 @@ class _TaskFormPageState extends State<TaskFormPage> {
                 ),
               ),
               label(AppStrings.assignedTo),
-              DropdownButtonFormField<String?>(
-                initialValue: _assigneeId,
-                isExpanded: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.person_outline_rounded),
-                ),
-                items: [
-                  const DropdownMenuItem(
-                    value: null,
-                    child: Text(AppStrings.unassigned),
-                  ),
-                  for (final member in assignable)
-                    DropdownMenuItem(
-                      value: member.id,
-                      child: Row(
-                        children: [
-                          UserAvatar(name: member.displayName, size: 26),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              member.displayName,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-                onChanged: (value) => _update(() => _assigneeId = value),
+              Builder(
+                builder: (context) {
+                  final selected = assignable
+                      .where((m) => m.id == _assigneeId)
+                      .firstOrNull;
+                  return PickerField(
+                    leading: selected == null
+                        ? const PickerIcon(Icons.person_add_alt_rounded)
+                        : UserAvatar(name: selected.displayName, size: 36),
+                    title: selected?.displayName ?? 'Choose an employee',
+                    subtitle: selected?.email ?? 'Or leave it unassigned',
+                    placeholder: selected == null,
+                    onTap: () => _pickAssignee(assignable),
+                  );
+                },
               ),
               label(AppStrings.dueDate),
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
+              PickerField(
+                leading: const PickerIcon(Icons.event_rounded),
+                title: Formatters.longDate(_dueDate),
+                subtitle: Formatters.dueLabel(_dueDate),
                 onTap: _pickDate,
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.event_rounded),
-                    suffixIcon: Icon(Icons.arrow_drop_down_rounded),
-                  ),
-                  child: Text(Formatters.longDate(_dueDate)),
-                ),
               ),
               const SizedBox(height: 8),
               Wrap(
