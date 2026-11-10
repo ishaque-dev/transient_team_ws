@@ -44,6 +44,34 @@ gets live notifications.
 `firestore.rules` enforces this model on the server: employees can only read their
 own tasks and can only change a task's status.
 
+## Subscription and remote switches
+
+**Subscription** lives in Firestore at `environments/prod/subscription/current`:
+
+| Field | Example | Meaning |
+|---|---|---|
+| `plan` | `Standard` | Shown on the Profile tab |
+| `status` | `active` | Set to `suspended` to block the app immediately |
+| `validUntil` | 31 Mar 2027, 23:59 IST | After this moment the app shows the "Contact me" screen |
+| `validFrom` | 10 Nov 2026 | Informational |
+
+The app can read this document but never write it (see `firestore.rules`); edit it in
+the Firebase console. Changes apply live.
+
+**Remote Config** (`remoteconfig.template.json`) controls:
+- `app_enabled`: the master on/off switch.
+- The texts and contact details on the "unavailable" screen.
+- One `feature_*` switch per feature: sign-in options, task actions, team management,
+  notifications, performance insights and Profile items.
+
+The app ships with the same defaults, so it works before the template is published.
+Published changes reach open apps within seconds.
+
+- Publish: Firebase Console → Remote Config → ⋮ → *Publish from a file*, or
+  `firebase deploy --only remoteconfig`.
+- After adding a flag in `lib/features/app_control/domain/feature_flags.dart`,
+  regenerate the template: `dart run tool/generate_remote_config.dart`.
+
 ## Performance score
 
 0–100, combining deadline achievement (40%), admin ratings (40%) and completion
@@ -58,6 +86,7 @@ environments/prod/users/{uid}
 environments/prod/tasks/{taskId}
 environments/prod/tasks/{taskId}/activity/{id}
 environments/prod/notifications/{id}
+environments/prod/subscription/current
 ```
 
 Every task change is written in one batch together with its activity entries and
@@ -87,7 +116,8 @@ device is offline.
 
 Feature-first clean architecture: `domain` (entities, use cases), `data`
 (Firestore models and data sources, repositories) and `presentation` (BLoC/Cubit,
-pages). Dependency injection uses `get_it`, and errors are typed `Failure`s returned
+pages). Navigation uses `go_router`: redirects send people to the splash,
+"Contact me", login or home screen. Dependency injection uses `get_it`, and errors are typed `Failure`s returned
 through `fpdart`'s `Either`.
 
 ```
@@ -100,7 +130,8 @@ lib/
     analytics/     dashboard, employee performance
     notifications/ feed, unread state, system alerts
     profile/       account and appearance
-    home/          role-based navigation shell
+    home/          role-based tabs and the signed-in scope
+    app_control/   subscription gate and Remote Config switches
 ```
 
 ```bash

@@ -51,15 +51,20 @@ class AppControlRemoteDs {
 
   /// Null when the subscription record does not exist.
   Stream<SubscriptionEntity?> watchSubscription() {
-    return _collections.subscription.snapshots().map((snapshot) {
-      final data = snapshot.data();
-      if (!snapshot.exists || data == null) return null;
-      return SubscriptionEntity(
-        plan: (data['plan'] as String?) ?? 'Standard',
-        status: (data['status'] as String?) ?? 'active',
-        validFrom: parseDateTime(data['validFrom']),
-        validUntil: parseDateTime(data['validUntil']),
-      );
-    });
+    return _collections.subscription
+        .snapshots()
+        // A fresh install's first answer comes from an empty local cache and
+        // says "missing"; wait for the server before treating it as absent.
+        .where((snapshot) => snapshot.exists || !snapshot.metadata.isFromCache)
+        .map((snapshot) {
+          final data = snapshot.data();
+          if (!snapshot.exists || data == null) return null;
+          return SubscriptionEntity(
+            plan: (data['plan'] as String?) ?? 'Standard',
+            status: (data['status'] as String?) ?? 'active',
+            validFrom: parseDateTime(data['validFrom']),
+            validUntil: parseDateTime(data['validUntil']),
+          );
+        });
   }
 }

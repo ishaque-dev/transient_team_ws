@@ -75,8 +75,16 @@ class AppControlCubit extends Cubit<AppControlState> {
   StreamSubscription<FeatureFlags>? _flags;
   StreamSubscription<SubscriptionEntity?>? _subscription;
   Timer? _expiryTimer;
+  Timer? _loadTimeout;
 
   void start() {
+    // No answer at all (e.g. offline first launch): let people in rather than
+    // locking them out over a network problem.
+    _loadTimeout = Timer(const Duration(seconds: 8), () {
+      if (!isClosed && !state.isReady) {
+        emit(state.copyWith(subscriptionUnavailable: true));
+      }
+    });
     _flags = _remote.watchFlags().listen(
       (flags) => emit(state.copyWith(flags: flags)),
     );
@@ -118,6 +126,7 @@ class AppControlCubit extends Cubit<AppControlState> {
     unawaited(_flags?.cancel());
     unawaited(_subscription?.cancel());
     _expiryTimer?.cancel();
+    _loadTimeout?.cancel();
     return super.close();
   }
 }

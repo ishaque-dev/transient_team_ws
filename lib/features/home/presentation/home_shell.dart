@@ -107,19 +107,22 @@ class HomeTabs extends StatelessWidget {
             const ProfilePage(),
           ];
 
+        // Read here in build (not inside LayoutBuilder's callback).
+    final now = DateTime.now();
+    final pendingApprovals = isAdmin
+        ? context.select(
+            (TeamCubit cubit) => cubit.state.inactiveEmployees.length,
+          )
+        : 0;
+    final overdue = isAdmin
+        ? 0
+        : context.select(
+            (TaskListBloc bloc) =>
+                bloc.state.tasks.where((t) => t.isOverdue(now)).length,
+          );
     int badgeFor(int i) {
-      if (isAdmin && i == 2) {
-        return context.select(
-          (TeamCubit cubit) => cubit.state.inactiveEmployees.length,
-        );
-      }
-      if (!isAdmin && i == 0) {
-        final now = DateTime.now();
-        return context.select(
-          (TaskListBloc bloc) =>
-              bloc.state.tasks.where((t) => t.isOverdue(now)).length,
-        );
-      }
+      if (isAdmin && i == 2) return pendingApprovals;
+      if (!isAdmin && i == 0) return overdue;
       return 0;
     }
 
