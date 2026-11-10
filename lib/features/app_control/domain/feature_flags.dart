@@ -43,7 +43,7 @@ abstract final class FlagKeys {
     FlagSpec(
       appEnabled,
       true,
-      'Master switch. false shows the "unavailable" screen to everyone.',
+      'Master switch. Set to false to show the unavailable screen to everyone.',
     ),
     FlagSpec(
       appBlockedTitle,
@@ -73,7 +73,7 @@ abstract final class FlagKeys {
     FlagSpec(
       googleSignIn,
       true,
-      'Show "Continue with Google" on the sign-in screen.',
+      'Show the Continue with Google button on the sign-in screen.',
     ),
     FlagSpec(
       requestAccess,
@@ -83,7 +83,7 @@ abstract final class FlagKeys {
     FlagSpec(
       forgotPassword,
       true,
-      'Show "Forgot password?" on the sign-in screen.',
+      'Show the Forgot password link on the sign-in screen.',
     ),
     FlagSpec(createTask, true, 'Admins can create new tasks.'),
     FlagSpec(editTask, true, 'Admins can edit tasks.'),

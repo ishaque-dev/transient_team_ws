@@ -54,6 +54,8 @@ void main() {
     'valueType': spec.defaultValue is bool ? 'BOOLEAN' : 'STRING',
   };
 
+  // Only parameterGroups at the top level: the Firebase console's "Publish
+  // from a file" rejects empty `conditions`/`parameters` and a `version`.
   final template = {
     'parameterGroups': {
       for (final entry in _groups.entries)

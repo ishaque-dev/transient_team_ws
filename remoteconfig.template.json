@@ -6,7 +6,7 @@
           "defaultValue": {
             "value": "true"
           },
-          "description": "Master switch. false shows the \"unavailable\" screen to everyone.",
+          "description": "Master switch. Set to false to show the unavailable screen to everyone.",
           "valueType": "BOOLEAN"
         },
         "app_blocked_title": {
@@ -56,7 +56,7 @@
           "defaultValue": {
             "value": "true"
           },
-          "description": "Show \"Continue with Google\" on the sign-in screen.",
+          "description": "Show the Continue with Google button on the sign-in screen.",
           "valueType": "BOOLEAN"
         },
         "feature_request_access": {
@@ -70,7 +70,7 @@
           "defaultValue": {
             "value": "true"
           },
-          "description": "Show \"Forgot password?\" on the sign-in screen.",
+          "description": "Show the Forgot password link on the sign-in screen.",
           "valueType": "BOOLEAN"
         }
       }
