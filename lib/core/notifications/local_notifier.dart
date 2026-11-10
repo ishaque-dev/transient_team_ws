@@ -18,6 +18,10 @@ abstract interface class ILocalNotifier {
 
   /// Payloads of notifications the user tapped.
   Stream<String> get taps;
+
+  /// Payload of the notification that launched the app from closed, if any.
+  /// Returned once.
+  String? takeLaunchPayload();
 }
 
 class LocalNotifier implements ILocalNotifier {
@@ -26,12 +30,20 @@ class LocalNotifier implements ILocalNotifier {
   final FlutterLocalNotificationsPlugin _plugin;
   final _taps = StreamController<String>.broadcast();
   bool _ready = false;
+  String? _launchPayload;
 
   static const _channelId = 'task_updates';
   static const _channelName = 'Task updates';
 
   @override
   Stream<String> get taps => _taps.stream;
+
+  @override
+  String? takeLaunchPayload() {
+    final payload = _launchPayload;
+    _launchPayload = null;
+    return payload;
+  }
 
   @override
   Future<void> initialize() async {
@@ -52,6 +64,11 @@ class LocalNotifier implements ILocalNotifier {
         },
       );
       _ready = true;
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp ?? false) {
+        final payload = launch!.notificationResponse?.payload;
+        if (payload != null && payload.isNotEmpty) _launchPayload = payload;
+      }
     } catch (error) {
       debugPrint('Local notifications unavailable: $error');
     }

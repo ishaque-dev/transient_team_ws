@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transient_team_ws/core/config/app_config.dart';
 import 'package:transient_team_ws/core/firebase/firestore_collections.dart';
 import 'package:transient_team_ws/core/notifications/local_notifier.dart';
+import 'package:transient_team_ws/core/notifications/notification_alert_tracker.dart';
 import 'package:transient_team_ws/core/theme/theme_cubit.dart';
 import 'package:transient_team_ws/features/app_control/data/app_control_remote_ds.dart';
 import 'package:transient_team_ws/features/app_control/presentation/app_control_cubit.dart';
@@ -84,6 +85,9 @@ Future<void> initDependencies(AppConfig config) async {
     ..registerLazySingleton(() => appControl)
     ..registerLazySingleton(() => AppControlCubit(appControl)..start());
 
+  serviceLocator.registerLazySingleton(
+    () => NotificationAlertTracker(SharedPreferencesAsync()),
+  );
   final notifier = LocalNotifier(FlutterLocalNotificationsPlugin());
   await notifier.initialize();
   serviceLocator.registerLazySingleton<ILocalNotifier>(() => notifier);
@@ -242,6 +246,7 @@ void _initNotifications() {
         markNotificationsSeen: serviceLocator(),
         localNotifier: serviceLocator(),
         user: user,
+        tracker: serviceLocator(),
         alertsEnabled: () =>
             serviceLocator<AppControlCubit>().state.flags.notifications,
       ),

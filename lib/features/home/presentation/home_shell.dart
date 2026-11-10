@@ -107,7 +107,7 @@ class HomeTabs extends StatelessWidget {
             const ProfilePage(),
           ];
 
-        // Read here in build (not inside LayoutBuilder's callback).
+    // Read here in build (not inside LayoutBuilder's callback).
     final now = DateTime.now();
     final pendingApprovals = isAdmin
         ? context.select(

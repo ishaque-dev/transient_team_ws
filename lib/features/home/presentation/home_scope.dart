@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transient_team_ws/core/di/di.dart';
+import 'package:transient_team_ws/core/notifications/background_notifications.dart';
 import 'package:transient_team_ws/core/notifications/local_notifier.dart';
+import 'package:transient_team_ws/core/notifications/notification_alert_tracker.dart';
 import 'package:transient_team_ws/core/router/app_routes.dart';
 import 'package:transient_team_ws/core/utils/action_feedback.dart';
 import 'package:transient_team_ws/core/widgets/feedback_views.dart';
@@ -71,6 +73,8 @@ class _HomeBlocsState extends State<_HomeBlocs> {
   late final NotificationsCubit _notifications;
   TeamCubit? _team;
   StreamSubscription<String>? _notificationTaps;
+  late final AuthBloc _auth;
+  late final NotificationAlertTracker _tracker;
 
   @override
   void initState() {
@@ -88,6 +92,22 @@ class _HomeBlocsState extends State<_HomeBlocs> {
     final notifier = serviceLocator<ILocalNotifier>();
     notifier.requestPermission();
     _notificationTaps = notifier.taps.listen(_openFromNotification);
+
+    // Phone notifications while the app is closed.
+    _auth = context.read<AuthBloc>();
+    _tracker = serviceLocator<NotificationAlertTracker>();
+    BackgroundNotifications.enable(
+      _tracker,
+      AlertScope(userId: user.id, isAdmin: user.isAdmin),
+    );
+
+    // The app was opened by tapping a notification: go to its target.
+    final launchPayload = notifier.takeLaunchPayload();
+    if (launchPayload != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _openFromNotification(launchPayload),
+      );
+    }
   }
 
   void _openFromNotification(String payload) {
@@ -102,6 +122,10 @@ class _HomeBlocsState extends State<_HomeBlocs> {
 
   @override
   void dispose() {
+    // Signed out (not just a role change): stop background checks.
+    if (_auth.state is! Authenticated) {
+      BackgroundNotifications.disable(_tracker);
+    }
     _notificationTaps?.cancel();
     _tasks.close();
     _actions.close();
