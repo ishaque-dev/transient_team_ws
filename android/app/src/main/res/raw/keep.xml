@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icons are referenced only from Dart by name, so release
+     resource shrinking cannot see them. Keep them explicitly. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_coopiq,@mipmap/launcher_icon" />

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Shows system notifications for events the app hears about through its
@@ -32,6 +33,9 @@ class LocalNotifier implements ILocalNotifier {
   bool _ready = false;
   String? _launchPayload;
 
+  /// White Coopiq "c" silhouette (res/drawable-*/ic_stat_coopiq.png).
+  static const _smallIcon = 'ic_stat_coopiq';
+  static const _brandPink = Color(0xFFEA1E6B);
   static const _channelId = 'task_updates';
   static const _channelName = 'Task updates';
 
@@ -51,7 +55,7 @@ class LocalNotifier implements ILocalNotifier {
     try {
       await _plugin.initialize(
         settings: const InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          android: AndroidInitializationSettings(_smallIcon),
           iOS: DarwinInitializationSettings(
             requestAlertPermission: false,
             requestBadgePermission: false,
@@ -114,6 +118,10 @@ class LocalNotifier implements ILocalNotifier {
             channelDescription: 'Assignments, status changes and ratings',
             importance: Importance.high,
             priority: Priority.high,
+            icon: _smallIcon,
+            color: _brandPink,
+            // Full-colour Coopiq app icon inside the notification.
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
           ),
           iOS: DarwinNotificationDetails(
             presentAlert: true,

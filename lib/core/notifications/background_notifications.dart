@@ -90,15 +90,17 @@ Future<void> checkForNewNotifications() async {
   }
   final tracker = NotificationAlertTracker(SharedPreferencesAsync());
   final scope = await tracker.readScope();
-  if (scope == null) return;
+  if (scope == null) return _log('no signed-in scope');
 
   final user =
       FirebaseAuth.instance.currentUser ??
       await FirebaseAuth.instance.authStateChanges().first;
-  if (user == null || user.uid != scope.userId) return;
+  if (user == null || user.uid != scope.userId) {
+    return _log('auth user ${user?.uid} does not match scope ${scope.userId}');
+  }
 
   final since = await tracker.lastAlerted(scope.userId);
-  if (since == null) return;
+  if (since == null) return _log('no alert baseline yet');
 
   final notifications = FirestoreCollections(
     FirebaseFirestore.instance,
@@ -121,6 +123,7 @@ Future<void> checkForNewNotifications() async {
       (doc) => AppNotificationModel.fromFirestore(doc.data(), id: doc.id),
     ),
   );
+  _log('${snapshot.docs.length} newer than $since, ${fresh.length} to show');
   if (fresh.isEmpty) return;
 
   final notifier = LocalNotifier(FlutterLocalNotificationsPlugin());
@@ -136,3 +139,5 @@ Future<void> checkForNewNotifications() async {
     );
   }
 }
+
+void _log(String message) => debugPrint('[background-notifications] $message');
